@@ -62,12 +62,12 @@ Intraline/word diff, file parsing, and patch application are unsupported.
 
 ## Diff options and limits
 
-| Option             | Default     | Behavior                                                                                                                                                          |
-| ------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `view`             | `"unified"` | `"unified"` or `"split"`; invalid values use `"unified"`.                                                                                                         |
-| `lineNumbers`      | `true`      | Show old/new line numbers.                                                                                                                                        |
-| `ignoreWhitespace` | none        | `"trim"` ignores leading/trailing whitespace per line; `"all"` ignores whitespace within lines too. Other values compare exactly. Original line text is retained. |
-| `batchSize`        | `500`       | Initial/per Load more displayed row count, integer 1–2000; invalid values use 500.                                                                                |
+| Option             | Default   | Behavior                                                                                                                                                          |
+| ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `view`             | `"split"` | `"unified"` or `"split"`; invalid values use `"split"`.                                                                                                           |
+| `lineNumbers`      | `true`    | Show old/new line numbers.                                                                                                                                        |
+| `ignoreWhitespace` | none      | `"trim"` ignores leading/trailing whitespace per line; `"all"` ignores whitespace within lines too. Other values compare exactly. Original line text is retained. |
+| `batchSize`        | `500`     | Initial/per Load more displayed row count, integer 1–2000; invalid values use 500.                                                                                |
 
 Each input is limited to 2 million characters and 20,000 lines, including the empty final line when present. After matching prefixes/suffixes are trimmed, the changed region allows at most 1,000 edits and 4 million comparison operations. Empty-sided regions are handled directly. Exceeding a limit displays an error; compare smaller sections for large rewrites.
 

@@ -431,6 +431,17 @@
     if (!(element instanceof HTMLElement)) throw new TypeError("byDIFFviewer: element must be an HTMLElement.");
     // Validate appearance before disposing the current instance, so invalid options leave it usable.
     applyAppearance(element, options);
+    const {
+      animations = true,
+      appearAnimation = false,
+      displayContainer = true,
+      controlsCompact = true,
+      credits = true,
+      themeToggle = true,
+      fontSizeControls = true,
+      copyButton: showCopyButton = true,
+      toolbar: showToolbar = true
+    } = options;
     const painted = element.classList.contains("byVIEWready");
     instances.get(element)?.destroy();
     const state = { active: true };
@@ -449,8 +460,8 @@
     instances.set(element, state);
     element.replaceChildren();
     element.classList.add("byDIFFdocument");
-    element.classList.toggle("byVIEWmotion", options.animations !== false);
-    const appear = options.animations !== false && options.appearAnimation === true;
+    element.classList.toggle("byVIEWmotion", animations);
+    const appear = animations && appearAnimation;
     element.classList.toggle("byVIEWappear", appear);
     if (painted && !appear) element.classList.add("byVIEWready");
     else {
@@ -462,8 +473,8 @@
         });
       });
     }
-    element.classList.toggle("byVIEWplain", options.displayContainer === false);
-    element.classList.toggle("byVIEWcompact", options.controlsCompact !== false);
+    element.classList.toggle("byVIEWplain", !displayContainer);
+    element.classList.toggle("byVIEWcompact", controlsCompact);
     element.classList.toggle("byVIEWbottom", options.controlsPosition === "bottom");
     const content = node("div", "byVIEWcontent");
     const toolbar = node("div", "byVIEWtoolbar");
@@ -480,15 +491,15 @@
       if (info.childNodes.length) info.append(` · v${byDIFFviewer.VERSION} · `);
       info.appendChild(link);
     }
-    if (options.credits !== false) toolbar.appendChild(info);
+    if (credits) toolbar.appendChild(info);
     const controls = node("div", "byVIEWcontrols");
     controls.setAttribute("role", "group");
     controls.setAttribute("aria-label", "Viewer controls");
-    if (options.themeToggle !== false) appendThemeToggle(element, controls, "diff");
-    if (options.fontSizeControls !== false) appendFontSizeControls(element, controls);
-    if (options.copyButton !== false) appendCopyButton(controls, getText, "Copy source");
+    if (themeToggle) appendThemeToggle(element, controls, "diff");
+    if (fontSizeControls) appendFontSizeControls(element, controls);
+    if (showCopyButton) appendCopyButton(controls, getText, "Copy source");
     if (controls.childNodes.length) toolbar.appendChild(controls);
-    if (options.toolbar === false || !toolbar.childNodes.length) {
+    if (!showToolbar || !toolbar.childNodes.length) {
       element.classList.remove("byVIEWbottom");
       element.appendChild(content);
     } else element.append(...(options.controlsPosition === "bottom" ? [content, toolbar] : [toolbar, content]));
@@ -507,12 +518,13 @@
   // Compare two strings without executing either. ready resolves after the first display batch.
   function byDIFFviewer(element, oldSource, newSource, options = {}) {
     if (typeof oldSource !== "string" || typeof newSource !== "string") throw new TypeError("Diff inputs must be strings.");
-    options = { view: "unified", lineNumbers: true, batchSize: 500, ...options };
+    options = { view: "split", batchSize: 500, ...options };
+    const { lineNumbers = true, viewSelect = false, copyOldButton = false, loadMore = true, statusBar = true } = options;
     options.batchSize = positive(options.batchSize, 500, 2000);
     const state = mount(element, options, () => newSource);
     element.setAttribute("aria-busy", "true");
     const actions = node("div", "byVIEWactions");
-    let view = options.view === "split" ? "split" : "unified";
+    let view = options.view === "unified" ? "unified" : "split";
     const viewControl = node("div", "byVIEWsegments");
     viewControl.setAttribute("role", "group");
     viewControl.setAttribute("aria-label", "Diff view");
@@ -536,8 +548,8 @@
       choice.append(input, node("span", "", label));
       viewControl.appendChild(choice);
     }
-    if (options.viewSelect === true) actions.appendChild(viewControl);
-    if (options.copyOldButton === true) copyButton(actions, () => oldSource, "Copy old source", "Copy old");
+    if (viewSelect) actions.appendChild(viewControl);
+    if (copyOldButton) copyButton(actions, () => oldSource, "Copy old source", "Copy old");
     const status = node("p", "byVIEWstatus", "Comparing…");
     status.setAttribute("role", "status");
     const scroll = node("div", "byDIFFscroll");
@@ -565,7 +577,7 @@
       else if (text && !source.endsWith("\n")) cell.appendChild(node("small", "byDIFFnoNewline", "No newline at end of file"));
     };
     const addCell = (row, text, number, kind) => {
-      if (options.lineNumbers !== false) {
+      if (lineNumbers) {
         const gutter = node("td", "byDIFFnumber", number ?? "");
         gutter.setAttribute("aria-label", number === null ? "No line" : `Line ${number}`);
         row.appendChild(gutter);
@@ -581,21 +593,21 @@
         heading = node("tr");
       head.appendChild(heading);
       for (const label of view === "split" ? ["Old", "New"] : ["Old line", "New line", "Change", "Text"]) {
-        if (view === "unified" && options.lineNumbers === false && /line$/.test(label)) continue;
+        if (view === "unified" && !lineNumbers && /line$/.test(label)) continue;
         const th = node("th", "", label);
         th.scope = "col";
-        if (view === "split" && options.lineNumbers !== false) th.colSpan = 2;
+        if (view === "split" && lineNumbers) th.colSpan = 2;
         heading.appendChild(th);
       }
       const body = node("tbody");
       const rows = view === "split" ? splitEdits : edits;
-      for (const edit of options.loadMore === false ? rows : rows.slice(0, shown)) {
+      for (const edit of !loadMore ? rows : rows.slice(0, shown)) {
         const row = node("tr", `byDIFF${edit.type}`);
         if (view === "split") {
           addCell(row, edit.oldText, edit.oldLine, edit.type !== "equal" && edit.oldText !== null ? "delete" : "equal");
           addCell(row, edit.newText, edit.newLine, edit.type !== "equal" && edit.newText !== null ? "insert" : "equal");
         } else {
-          if (options.lineNumbers !== false) {
+          if (lineNumbers) {
             row.append(node("td", "byDIFFnumber", edit.oldLine ?? ""), node("td", "byDIFFnumber", edit.newLine ?? ""));
           }
           const marker = node("td", "byDIFFmarker", edit.type === "insert" ? "+" : edit.type === "delete" ? "−" : " ");
@@ -610,11 +622,11 @@
       }
       table.dataset.view = view;
       table.replaceChildren(head, body);
-      more.hidden = options.loadMore === false || shown >= rows.length;
-      status.hidden = options.statusBar === false && edits.length > 0;
+      more.hidden = !loadMore || shown >= rows.length;
+      status.hidden = !statusBar && edits.length > 0;
       const inserted = edits.filter((edit) => edit.type === "insert").length,
         deleted = edits.filter((edit) => edit.type === "delete").length;
-      status.textContent = edits.length ? `${inserted} additions · ${deleted} deletions · ${options.loadMore === false ? rows.length : Math.min(shown, rows.length)} of ${rows.length} rows displayed` : "Both inputs are empty.";
+      status.textContent = edits.length ? `${inserted} additions · ${deleted} deletions · ${!loadMore ? rows.length : Math.min(shown, rows.length)} of ${rows.length} rows displayed` : "Both inputs are empty.";
       element.setAttribute("aria-busy", "false");
     };
     state.ready = (async () => {

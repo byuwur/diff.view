@@ -131,9 +131,19 @@ test("DIFF standalone browser contracts", async (t) => {
       }));
       assert.deepEqual(result, { shift: ["insert", "equal", "equal", "equal", "equal"], empty: [], newline: ["equal", "delete"], crlf: true, trim: 2, all: true });
     });
+    await t.test("side-by-side defaults and explicit unified view", async () => {
+      for (const options of [undefined, {}, { view: undefined }, { view: null }, { view: "invalid" }, { view: "split" }, { view: "unified" }]) {
+        await page.evaluate(async (options) => {
+          await byDIFFviewer(root, "old", "new", options).ready;
+        }, options);
+        const view = options?.view === "unified" ? "unified" : "split";
+        assert.equal(await page.locator(".byDIFFtable").getAttribute("data-view"), view);
+        assert.equal(await page.locator("tbody tr").count(), view === "split" ? 1 : 2);
+      }
+    });
     await t.test("unified/split view, line numbers, and exact copying", async () => {
       await page.evaluate(async () => {
-        await byDIFFviewer(root, "old\r\n", "new", { viewSelect: true, copyOldButton: true }).ready;
+        await byDIFFviewer(root, "old\r\n", "new", { view: "unified", viewSelect: true, copyOldButton: true }).ready;
       });
       assert.equal(
         await page
@@ -273,8 +283,8 @@ test("DIFF standalone browser contracts", async (t) => {
         await byDIFFviewer(other, "a", "b", { viewSelect: true }).ready;
       });
       await page.locator("#viewer").getByRole("radio", { name: "Unified", exact: true }).check();
-      assert.equal(await page.locator("#other-layout .byDIFFtable").getAttribute("data-view"), "unified");
-      assert.equal(await page.locator("#other-layout").getByRole("radio", { name: "Unified", exact: true }).isChecked(), true);
+      assert.equal(await page.locator("#other-layout .byDIFFtable").getAttribute("data-view"), "split");
+      assert.equal(await page.locator("#other-layout").getByRole("radio", { name: "Side by side", exact: true }).isChecked(), true);
       await page.locator("#other-layout").evaluate((element) => element.remove());
       await page.evaluate(async () => {
         await byDIFFviewer(root, "old", "new", { view: "split", lineNumbers: false }).ready;
@@ -750,7 +760,7 @@ test("viewer defaults, optional tools, and copy feedback", async () => {
     await page.evaluate(() => renderUI({ batchSize: 1 }));
     assert.equal(await page.getByRole("button", { name: "Load more", exact: false }).isVisible(), true);
     await page.evaluate(() => renderUI({ batchSize: 1, loadMore: false }));
-    assert.equal(await page.locator(".byDIFFtable tbody tr").count(), 4);
+    assert.equal(await page.locator(".byDIFFtable tbody tr").count(), 3);
     assert.equal(await page.getByRole("button", { name: "Load more", exact: false }).isVisible(), false);
     await page.evaluate(() => renderUI({ credits: false }));
     assert.equal(await page.locator(".byVIEWinfo").count(), 0);
@@ -839,6 +849,51 @@ test("document and content backgrounds stay independent through theme and toolba
         .evaluate((element) => getComputedStyle(element).backgroundColor),
       "rgba(0, 0, 0, 0)"
     );
+  } finally {
+    await browser.close();
+  }
+});
+
+// --- BOOLEAN DEFAULTS ---
+test("omitted and undefined boolean options share defaults", async () => {
+  const browser = await launchBrowser();
+  try {
+    const page = await browser.newPage();
+    await page.route("https://cdn.jsdelivr.net/**", (route) => route.fulfill({ body: "", contentType: "text/css" }));
+    await page.setContent('<div id="boolean-defaults" data-theme="monokai"></div>');
+    await page.addStyleTag({ path: path.join(__dirname, "../diff.css") });
+    await page.addScriptTag({ path: path.join(__dirname, "../diff.js") });
+    const snapshots = await page.evaluate(
+      async ({ api, inputs, flags }) => {
+        const host = document.getElementById("boolean-defaults");
+        const snapshots = [];
+        const missing = Object.fromEntries(flags.map((name) => [name, undefined]));
+        for (const values of [{}, missing, { animations: false, appearAnimation: true }]) {
+          const options = api === "byMDeditor" ? { syntax: "source", ...values } : values;
+          const controller = window[api](host, ...inputs, options);
+          await controller?.ready;
+          snapshots.push({
+            motion: host.classList.contains("byVIEWmotion"),
+            appear: host.classList.contains("byVIEWappear"),
+            compact: host.classList.contains("byVIEWcompact") || host.classList.contains("byEDcompact"),
+            plain: host.classList.contains("byVIEWplain"),
+            searches: host.querySelectorAll('input[type="search"]').length,
+            controls: [...host.querySelectorAll(".byVIEWtoolbar button, .byEDbar button")].map((button) => [button.getAttribute("aria-label"), button.hidden, button.disabled])
+          });
+        }
+        return snapshots;
+      },
+      {
+        api: "byDIFFviewer",
+        inputs: ["old\n", "new\n"],
+        flags: ["toolbar", "credits", "themeToggle", "fontSizeControls", "copyButton", "controlsCompact", "animations", "appearAnimation", "displayContainer", "statusBar", "lineNumbers", "viewSelect", "copyOldButton", "loadMore"]
+      }
+    );
+    assert.deepEqual(snapshots[1], snapshots[0], "Undefined flags use the same defaults as omitted flags");
+    assert.equal(snapshots[0].motion, true);
+    assert.equal(snapshots[0].appear, false);
+    assert.equal(snapshots[2].motion, false);
+    assert.equal(snapshots[2].appear, false, "Disabling motion takes precedence over appearing");
   } finally {
     await browser.close();
   }
