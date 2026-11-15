@@ -67,7 +67,7 @@ Intraline/word diff, file parsing, and patch application are unsupported.
 | `view`             | `"split"` | `"unified"` or `"split"`; invalid values use `"split"`.                                                                                                           |
 | `lineNumbers`      | `true`    | Show old/new line numbers.                                                                                                                                        |
 | `ignoreWhitespace` | none      | `"trim"` ignores leading/trailing whitespace per line; `"all"` ignores whitespace within lines too. Other values compare exactly. Original line text is retained. |
-| `batchSize`        | `500`     | Initial/per Load more displayed row count, integer 1–2000; invalid values use 500.                                                                                |
+| `batchSize`        | `500`     | Initial/per Load more displayed row count, integer 1-2000; invalid values use 500.                                                                                |
 
 Each input is limited to 2 million characters and 20,000 lines, including the empty final line when present. After matching prefixes/suffixes are trimmed, the changed region allows at most 1,000 edits and 4 million comparison operations. Empty-sided regions are handled directly. Exceeding a limit displays an error; compare smaller sections for large rewrites.
 
@@ -90,7 +90,7 @@ Use `--by-diff-add` and `--by-diff-remove` on `.byDIFFdocument` to customize cha
 | `loadMore`         | `true`      | Load differences in batches; false displays every line.                                                                                                    |
 | `theme`            | Container   | Initial `"light"` or `"dark"` mode class.                                                                                                                  |
 | `palette`          | Container   | Initial `data-theme` palette, including custom CSS names.                                                                                                  |
-| `fontSize`         | Container   | Number in rem or a CSS size such as `"1.25em"` or `"20px"`; bounded to `0.5rem`–`3rem`.                                                                    |
+| `fontSize`         | Container   | Number in rem or a CSS size such as `"1.25em"` or `"20px"`; bounded to `0.5rem`-`3rem`.                                                                    |
 | `themeToggle`      | `true`      | Show the theme toggle.                                                                                                                                     |
 | `fontSizeControls` | `true`      | Show text-size controls.                                                                                                                                   |
 | `copyButton`       | `true`      | Show full source copy button.                                                                                                                              |

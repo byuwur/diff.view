@@ -550,7 +550,7 @@
     }
     if (viewSelect) actions.appendChild(viewControl);
     if (copyOldButton) copyButton(actions, () => oldSource, "Copy old source", "Copy old");
-    const status = node("p", "byVIEWstatus", "Comparing…");
+    const status = node("p", "byVIEWstatus", "Comparing...");
     status.setAttribute("role", "status");
     const scroll = node("div", "byDIFFscroll");
     scroll.tabIndex = 0;
