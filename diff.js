@@ -11,7 +11,7 @@
   if (global.byDIFFviewer?.initialized) return;
 
   // --- METADATA ---
-  byDIFFviewer.VERSION = "1.5"; // 2026-11-15
+  byDIFFviewer.VERSION = "1.6"; // 2026-11-16
 
   // --- STATE ---
   const instances = new WeakMap();
