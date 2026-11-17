@@ -1,9 +1,9 @@
 "use strict";
 /*
  * File: diff.js
- * Desc: Standalone DIFF viewer. No runtime dependencies.
+ * Desc: Standalone DIFF.view. No runtime dependencies.
  * Copyright (c) 2026 Andres Trujillo [Mateus] byUwUr
- * https://github.com/byuwur/easy-diff-viewer
+ * https://github.com/byuwur/diff.view
  * MIT License (see LICENSE).
  */
 (function (global) {
@@ -114,8 +114,8 @@
     const document = element.ownerDocument;
     if (document.defaultView.getComputedStyle(document.documentElement).getPropertyValue("--by-diff-themes-loaded").trim() === "1") return;
     warnedPalettes.add(palette);
-    // console.warn(`easy-diff-viewer: Palette "${palette}" requires diff.themes.css. Import it after diff.css. https://byuwur.github.io/easy-diff-viewer/`);
-    console.warn(`easy-diff-viewer: Palette "${palette}" requires diff.themes.css. Import it after diff.css. https://diff.byuwur.co/`);
+    // console.warn(`DIFF.view: Palette "${palette}" requires diff.themes.css. Import it after diff.css. https://byuwur.github.io/diff.view/`);
+    console.warn(`DIFF.view: Palette "${palette}" requires diff.themes.css. Import it after diff.css. https://diff.byuwur.co/`);
   };
 
   // Explicit appearance options override markup; omitted values preserve the container's state.
@@ -481,7 +481,7 @@
     toolbar.dataset.size = ["xs", "small", "regular", "large", "xl"].includes(options.controlsSize) ? options.controlsSize : "regular";
     const info = node("small", "byVIEWinfo");
     for (const [text, href] of [
-      ["easy-diff-viewer", "https://github.com/byuwur/easy-diff-viewer"],
+      ["DIFF.view", "https://github.com/byuwur/diff.view"],
       ["@byUwUr", "https://byuwur.co"]
     ]) {
       const link = node("a", "", text);

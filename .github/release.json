@@ -1,5 +1,5 @@
 {
-  "repository": "byuwur/easy-diff-viewer",
+  "repository": "byuwur/diff.view",
   "branch": "main",
   "kind": "easy",
   "runtime": ["diff.js", "diff.css", "diff.themes.css"],

@@ -1,5 +1,5 @@
 {
-  "name": "easy-diff-viewer-release",
+  "name": "diff.view",
   "private": true,
   "engines": {
     "node": ">=22"
