@@ -2,8 +2,6 @@
 
 ![DIFF.view preview](prev.jpg)
 
-Development version: **v2** (unreleased). The [latest release](https://github.com/byuwur/diff.view/releases/latest) supplies the published files.
-
 **Diff, spot what changed.**
 
 Compare two strings in a unified or side-by-side view, with line numbers and exact source copying.
