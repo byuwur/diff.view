@@ -57,8 +57,8 @@ test("DIFF playground loads, updates, and copies a starter", { timeout: 30000 },
   await page.goto("https://playground.test/index.html");
   assert.equal(await page.locator("#latest-release").textContent(), "Latest Release");
   assert.equal(await page.locator("#latest-release").getAttribute("href"), "https://github.com/byuwur/diff.view/releases/latest");
-  assert.equal(await page.locator("#download-release").getAttribute("href"), "https://github.com/byuwur/diff.view/releases/download/v2/diff.view.v2.zip");
-  assert.equal(await page.locator("#download-minified").getAttribute("href"), "https://github.com/byuwur/diff.view/releases/download/v2/diff.view.v2.minified.zip");
+  assert.equal(await page.locator("#download-release").getAttribute("href"), "https://github.com/byuwur/diff.view/releases/latest/download/diff.view.zip");
+  assert.equal(await page.locator("#download-minified").getAttribute("href"), "https://github.com/byuwur/diff.view/releases/latest/download/diff.view.minified.zip");
   const preview = page.frameLocator("#preview-frame").locator(".byDIFFdocument");
   await preview.waitFor();
   await page.locator("#second").fill("before\nPLAYGROUND_CORE");
