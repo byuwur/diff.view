@@ -21,6 +21,9 @@ test("DIFF library", { timeout: 30000 }, async (t) => {
   page.on("pageerror", (error) => errors.push(error.message));
   // Load authored files directly; CDN availability is not part of this contract.
   await page.route("**/*", (route) => route.abort());
+  // ===============
+  // BROWSER FIXTURE
+  // ===============
   await page.setContent('<!doctype html><meta charset="UTF-8"><div id="viewer"></div>');
   await page.addStyleTag({ path: path.join(__dirname, "../diff.css") });
   await page.addScriptTag({ path: path.join(__dirname, "../diff.js") });
@@ -28,6 +31,9 @@ test("DIFF library", { timeout: 30000 }, async (t) => {
     window.root = document.getElementById("viewer");
   });
 
+  // ==================
+  // RENDERING BEHAVIOR
+  // ==================
   await t.test("compares line sequences and renders additions and removals", async () => {
     const types = await page.evaluate(() => byDIFFviewer.diff("keep\nold\n", "keep\nnew\n").map((entry) => entry.type));
     assert.ok(types.includes("equal"));

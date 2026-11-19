@@ -3,7 +3,9 @@
 /* Monokai is the default. Classes select mode; named data-theme values select a palette.
    data-theme="light" / "dark" remain mode aliases and override mode classes. */
 
-/* --- VIEWER --- */
+/* ==========
+ * VIEWER
+ * ========== */
 /* Keep host layout transitions out; component rules below opt in to motion. */
 .byDIFFdocument,
 .byDIFFdocument *,
@@ -31,7 +33,9 @@
   box-sizing: border-box;
 }
 
-/* --- CONTENT --- */
+/* ==========
+ * CONTENT
+ * ========== */
 .byDIFFdocument *,
 .byDIFFdocument *::before,
 .byDIFFdocument *::after {
@@ -174,7 +178,9 @@
   outline-offset: -0.125rem;
 }
 
-/* --- CONTROLS --- */
+/* ==========
+ * CONTROLS
+ * ========== */
 .byDIFFdocument > .byVIEWtoolbar {
   position: sticky;
   flex-shrink: 0;
@@ -349,7 +355,9 @@
   font-family: var(--by-view-controls-font, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace);
 }
 
-/* --- INTERACTION --- */
+/* ===========
+ * INTERACTION
+ * =========== */
 .byDIFFdocument button {
   -webkit-tap-highlight-color: #0000;
   touch-action: manipulation;
@@ -436,7 +444,9 @@
   outline-offset: -0.125rem;
 }
 
-/* --- MOTION --- */
+/* ==========
+ * MOTION
+ * ========== */
 /* Initial content is immediate unless the entrance animation is explicitly enabled. */
 .byDIFFdocument {
   --by-view-motion-duration: 0s;
@@ -530,8 +540,12 @@
   transition: opacity var(--by-view-motion-duration) ease-out !important;
 }
 
-/* --- THEMES --- */
-/* --- LIGHT --- */
+/* ==========
+ * THEMES
+ * ========== */
+/* ==========
+ * LIGHT
+ * ========== */
 .byDIFFdocument,
 .byDIFFdocument.light:not([data-theme="dark"]),
 .byDIFFdocument[data-theme="light"] {
@@ -551,7 +565,9 @@
   --by-diff-remove: #f8dce5;
 }
 
-/* --- DARK --- */
+/* ==========
+ * DARK
+ * ========== */
 .byDIFFdocument.dark:not([data-theme="light"]),
 .byDIFFdocument[data-theme="dark"] {
   color-scheme: dark;
@@ -570,7 +586,9 @@
   --by-diff-remove: #512c3a;
 }
 
-/* --- GITHUB --- */
+/* ==========
+ * GITHUB
+ * ========== */
 /* Light */
 .byDIFFdocument[data-theme="github"]:not(.dark) {
   --by-view-muted: #59636e;
@@ -602,7 +620,9 @@
   --by-diff-remove: #32151a;
 }
 
-/* --- SOLARIZED --- */
+/* ==========
+ * SOLARIZED
+ * ========== */
 /* Light */
 .byDIFFdocument[data-theme="solarized"]:not(.dark) {
   --by-view-muted: #657b83;
@@ -634,7 +654,9 @@
   --by-diff-remove: #3b252c;
 }
 
-/* --- HIGH CONTRAST --- */
+/* =============
+ * HIGH CONTRAST
+ * ============= */
 /* Light */
 .byDIFFdocument[data-theme="high-contrast"]:not(.dark) {
   --by-view-muted: #333333;
