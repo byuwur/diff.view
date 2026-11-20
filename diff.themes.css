@@ -5,12 +5,8 @@
   --by-diff-themes-loaded: 1;
 }
 
-/* ==========
- * THEMES
- * ========== */
-/* ==========
- * DRACULA
- * ========== */
+/* ===== THEMES ===== */
+/* ===== DRACULA ===== */
 
 .byDIFFdocument[data-theme="dracula"]:not(.dark) {
   --by-view-muted: #635f70;
@@ -42,9 +38,7 @@
   --by-diff-remove: #483141;
 }
 
-/* ==========
- * DARCULA
- * ========== */
+/* ===== DARCULA ===== */
 
 .byDIFFdocument[data-theme="darcula"]:not(.dark) {
   --by-view-muted: #65615e;
@@ -76,9 +70,7 @@
   --by-diff-remove: #4b3238;
 }
 
-/* ==========
- * NORD
- * ========== */
+/* ===== NORD ===== */
 
 .byDIFFdocument[data-theme="nord"]:not(.dark) {
   --by-view-muted: #536174;
@@ -110,9 +102,7 @@
   --by-diff-remove: #4d3a49;
 }
 
-/* ==========
- * CATPPUCCIN
- * ========== */
+/* ===== CATPPUCCIN ===== */
 
 .byDIFFdocument[data-theme="catppuccin"]:not(.dark) {
   --by-view-muted: #616478;
@@ -144,9 +134,7 @@
   --by-diff-remove: #40273a;
 }
 
-/* =================
- * CATPPUCCIN FRAPPÉ
- * ================= */
+/* ===== CATPPUCCIN FRAPPÉ ===== */
 
 .byDIFFdocument[data-theme="catppuccin-frappe"]:not(.dark) {
   --by-view-muted: #616478;
@@ -178,9 +166,7 @@
   --by-diff-remove: #4f3a4e;
 }
 
-/* ====================
- * CATPPUCCIN MACCHIATO
- * ==================== */
+/* ===== CATPPUCCIN MACCHIATO ===== */
 
 .byDIFFdocument[data-theme="catppuccin-macchiato"]:not(.dark) {
   --by-view-muted: #616478;
@@ -212,9 +198,7 @@
   --by-diff-remove: #452f44;
 }
 
-/* ==========
- * ROSÉ PINE
- * ========== */
+/* ===== ROSÉ PINE ===== */
 
 .byDIFFdocument[data-theme="rose-pine"]:not(.dark) {
   --by-view-muted: #68657e;
@@ -246,9 +230,7 @@
   --by-diff-remove: #3c2232;
 }
 
-/* ==============
- * ROSÉ PINE MOON
- * ============== */
+/* ===== ROSÉ PINE MOON ===== */
 
 .byDIFFdocument[data-theme="rose-pine-moon"]:not(.dark) {
   --by-view-muted: #68657e;
@@ -280,9 +262,7 @@
   --by-diff-remove: #442a41;
 }
 
-/* ==========
- * GRUVBOX
- * ========== */
+/* ===== GRUVBOX ===== */
 
 .byDIFFdocument[data-theme="gruvbox"]:not(.dark) {
   --by-view-muted: #6b5f56;
@@ -314,9 +294,7 @@
   --by-diff-remove: #483035;
 }
 
-/* ================
- * GRUVBOX MATERIAL
- * ================ */
+/* ===== GRUVBOX MATERIAL ===== */
 
 .byDIFFdocument[data-theme="gruvbox-material"]:not(.dark) {
   --by-view-muted: #665b52;
@@ -348,9 +326,7 @@
   --by-diff-remove: #493035;
 }
 
-/* ===========
- * TOKYO NIGHT
- * =========== */
+/* ===== TOKYO NIGHT ===== */
 
 .byDIFFdocument[data-theme="tokyo-night"]:not(.dark) {
   --by-view-muted: #545c75;
@@ -382,9 +358,7 @@
   --by-diff-remove: #3d2533;
 }
 
-/* ===========
- * TOKYO STORM
- * =========== */
+/* ===== TOKYO STORM ===== */
 
 .byDIFFdocument[data-theme="tokyo-storm"]:not(.dark) {
   --by-view-muted: #57607a;
@@ -416,9 +390,7 @@
   --by-diff-remove: #453045;
 }
 
-/* ==========
- * TOKYO MOON
- * ========== */
+/* ===== TOKYO MOON ===== */
 
 .byDIFFdocument[data-theme="tokyo-moon"]:not(.dark) {
   --by-view-muted: #605d7b;
@@ -450,9 +422,7 @@
   --by-diff-remove: #432c41;
 }
 
-/* ==========
- * ONE
- * ========== */
+/* ===== ONE ===== */
 
 .byDIFFdocument[data-theme="one"]:not(.dark) {
   --by-view-muted: #676a75;
@@ -484,9 +454,7 @@
   --by-diff-remove: #48333f;
 }
 
-/* ==========
- * MATERIAL
- * ========== */
+/* ===== MATERIAL ===== */
 
 .byDIFFdocument[data-theme="material"]:not(.dark) {
   --by-view-muted: #546e7a;
@@ -518,9 +486,7 @@
   --by-diff-remove: #463842;
 }
 
-/* ==============
- * MATERIAL OCEAN
- * ============== */
+/* ===== MATERIAL OCEAN ===== */
 
 .byDIFFdocument[data-theme="material-ocean"]:not(.dark) {
   --by-view-muted: #5a687d;
@@ -552,9 +518,7 @@
   --by-diff-remove: #331d29;
 }
 
-/* ==========
- * NIGHT OWL
- * ========== */
+/* ===== NIGHT OWL ===== */
 
 .byDIFFdocument[data-theme="night-owl"]:not(.dark) {
   --by-view-muted: #656575;
@@ -586,9 +550,7 @@
   --by-diff-remove: #282134;
 }
 
-/* ==========
- * SYNTHWAVE
- * ========== */
+/* ===== SYNTHWAVE ===== */
 
 .byDIFFdocument[data-theme="synthwave"]:not(.dark) {
   --by-view-muted: #7f4d80;
@@ -620,9 +582,7 @@
   --by-diff-remove: #462c40;
 }
 
-/* ==========
- * AYU
- * ========== */
+/* ===== AYU ===== */
 
 .byDIFFdocument[data-theme="ayu"]:not(.dark) {
   --by-view-muted: #686b6f;
@@ -654,9 +614,7 @@
   --by-diff-remove: #331f29;
 }
 
-/* ==========
- * EVERFOREST
- * ========== */
+/* ===== EVERFOREST ===== */
 
 .byDIFFdocument[data-theme="everforest"]:not(.dark) {
   --by-view-muted: #5d6a72;
@@ -688,9 +646,7 @@
   --by-diff-remove: #4c3a45;
 }
 
-/* ==========
- * KANAGAWA
- * ========== */
+/* ===== KANAGAWA ===== */
 
 .byDIFFdocument[data-theme="kanagawa"]:not(.dark) {
   --by-view-muted: #5f5f5c;
@@ -722,9 +678,7 @@
   --by-diff-remove: #412835;
 }
 
-/* ==========
- * SELENIZED
- * ========== */
+/* ===== SELENIZED ===== */
 
 .byDIFFdocument[data-theme="selenized"]:not(.dark) {
   --by-view-muted: #56696f;
@@ -756,9 +710,7 @@
   --by-diff-remove: #344050;
 }
 
-/* ==========
- * VS CODE
- * ========== */
+/* ===== VS CODE ===== */
 
 .byDIFFdocument[data-theme="vscode"]:not(.dark) {
   --by-view-muted: #686868;
@@ -790,9 +742,7 @@
   --by-diff-remove: #40272d;
 }
 
-/* ==============
- * MONOKAI DIMMED
- * ============== */
+/* ===== MONOKAI DIMMED ===== */
 
 .byDIFFdocument[data-theme="monokai-dimmed"]:not(.dark) {
   --by-view-muted: #68685f;
@@ -824,9 +774,7 @@
   --by-diff-remove: #40272d;
 }
 
-/* ==========
- * DISCORD
- * ========== */
+/* ===== DISCORD ===== */
 
 .byDIFFdocument[data-theme="discord"]:not(.dark) {
   --by-view-muted: #606773;
@@ -858,9 +806,7 @@
   --by-diff-remove: #503942;
 }
 
-/* ==========
- * SLACK
- * ========== */
+/* ===== SLACK ===== */
 
 .byDIFFdocument[data-theme="slack"]:not(.dark) {
   --by-view-muted: #765677;
@@ -892,9 +838,7 @@
   --by-diff-remove: #5b1a49;
 }
 
-/* ==========
- * BONYUR
- * ========== */
+/* ===== BONYUR ===== */
 
 .byDIFFdocument[data-theme="bonyur"]:not(.dark) {
   --by-view-muted: #606b68;
@@ -926,9 +870,7 @@
   --by-diff-remove: #38252b;
 }
 
-/* ==========
- * SAKURA
- * ========== */
+/* ===== SAKURA ===== */
 
 .byDIFFdocument[data-theme="sakura"]:not(.dark) {
   --by-view-muted: #88586e;
@@ -960,9 +902,7 @@
   --by-diff-remove: #4f2638;
 }
 
-/* ==========
- * BUBBLEGUM
- * ========== */
+/* ===== BUBBLEGUM ===== */
 
 .byDIFFdocument[data-theme="bubblegum"]:not(.dark) {
   --by-view-muted: #824c6e;
@@ -994,9 +934,7 @@
   --by-diff-remove: #581839;
 }
 
-/* ==========
- * CANDY
- * ========== */
+/* ===== CANDY ===== */
 
 .byDIFFdocument[data-theme="candy"]:not(.dark) {
   --by-view-muted: #7a5a80;
@@ -1028,9 +966,7 @@
   --by-diff-remove: #4c2147;
 }
 
-/* ==========
- * ROSE GOLD
- * ========== */
+/* ===== ROSE GOLD ===== */
 
 .byDIFFdocument[data-theme="rose-gold"]:not(.dark) {
   --by-view-muted: #7c5e55;
@@ -1062,9 +998,7 @@
   --by-diff-remove: #4f2a34;
 }
 
-/* ==========
- * LAVENDER
- * ========== */
+/* ===== LAVENDER ===== */
 
 .byDIFFdocument[data-theme="lavender"]:not(.dark) {
   --by-view-muted: #6e5d84;
@@ -1096,9 +1030,7 @@
   --by-diff-remove: #462742;
 }
 
-/* ==========
- * CYBERPUNK
- * ========== */
+/* ===== CYBERPUNK ===== */
 
 .byDIFFdocument[data-theme="cyberpunk"]:not(.dark) {
   --by-view-muted: #6f6844;
@@ -1130,9 +1062,7 @@
   --by-diff-remove: #41203a;
 }
 
-/* ==========
- * SUNSET
- * ========== */
+/* ===== SUNSET ===== */
 
 .byDIFFdocument[data-theme="sunset"]:not(.dark) {
   --by-view-muted: #825c46;
@@ -1164,9 +1094,7 @@
   --by-diff-remove: #52283d;
 }
 
-/* ==========
- * VOLCANO
- * ========== */
+/* ===== VOLCANO ===== */
 
 .byDIFFdocument[data-theme="volcano"]:not(.dark) {
   --by-view-muted: #7e5b54;
@@ -1198,9 +1126,7 @@
   --by-diff-remove: #4a2227;
 }
 
-/* ==========
- * AMBER
- * ========== */
+/* ===== AMBER ===== */
 
 .byDIFFdocument[data-theme="amber"]:not(.dark) {
   --by-view-muted: #74633f;
@@ -1232,9 +1158,7 @@
   --by-diff-remove: #462720;
 }
 
-/* ==========
- * TERMINAL
- * ========== */
+/* ===== TERMINAL ===== */
 
 .byDIFFdocument[data-theme="terminal"]:not(.dark) {
   --by-view-muted: #497055;
@@ -1266,9 +1190,7 @@
   --by-diff-remove: #322422;
 }
 
-/* ==========
- * PAPER
- * ========== */
+/* ===== PAPER ===== */
 
 .byDIFFdocument[data-theme="paper"]:not(.dark) {
   --by-view-muted: #766657;
@@ -1300,9 +1222,7 @@
   --by-diff-remove: #412426;
 }
 
-/* ==========
- * INK
- * ========== */
+/* ===== INK ===== */
 
 .byDIFFdocument[data-theme="ink"]:not(.dark) {
   --by-view-muted: #686868;
@@ -1334,9 +1254,7 @@
   --by-diff-remove: #3a232b;
 }
 
-/* ==========
- * OCEAN
- * ========== */
+/* ===== OCEAN ===== */
 
 .byDIFFdocument[data-theme="ocean"]:not(.dark) {
   --by-view-muted: #506c7b;
@@ -1368,9 +1286,7 @@
   --by-diff-remove: #34314c;
 }
 
-/* ==========
- * FOREST
- * ========== */
+/* ===== FOREST ===== */
 
 .byDIFFdocument[data-theme="forest"]:not(.dark) {
   --by-view-muted: #5b6a58;
@@ -1402,9 +1318,7 @@
   --by-diff-remove: #3b3232;
 }
 
-/* ==========
- * MINT
- * ========== */
+/* ===== MINT ===== */
 
 .byDIFFdocument[data-theme="mint"]:not(.dark) {
   --by-view-muted: #516e64;
@@ -1436,9 +1350,7 @@
   --by-diff-remove: #383939;
 }
 
-/* ==========
- * ICE
- * ========== */
+/* ===== ICE ===== */
 
 .byDIFFdocument[data-theme="ice"]:not(.dark) {
   --by-view-muted: #546c78;
@@ -1470,9 +1382,7 @@
   --by-diff-remove: #3b3144;
 }
 
-/* ==========
- * SEPIA
- * ========== */
+/* ===== SEPIA ===== */
 
 .byDIFFdocument[data-theme="sepia"]:not(.dark) {
   --by-view-muted: #6d5b44;

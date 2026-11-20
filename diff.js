@@ -7,24 +7,16 @@
  * MIT License (see LICENSE).
  */
 (function (global) {
-  // ==============
-  // INITIALIZATION
-  // ==============
+  // ===== INITIALIZATION =====
   if (global.byDIFFviewer?.initialized) return;
 
-  // ==========
-  // METADATA
-  // ==========
+  // ===== METADATA =====
   byDIFFviewer.VERSION = "2.1"; // 2026-11-18
 
-  // ==========
-  // STATE
-  // ==========
+  // ===== STATE =====
   const instances = new WeakMap();
   let nextViewId = 0;
-  // ==========
-  // HELPERS
-  // ==========
+  // ===== HELPERS =====
   const node = (tag, className = "", text) => {
     const element = document.createElement(tag);
     element.className = className;
@@ -69,9 +61,7 @@
   // Yield at a chunk boundary so input events and replacement renders can run.
   const pause = () => new Promise((resolve) => setTimeout(resolve, 0));
   const positive = (value, fallback, maximum) => (Number.isInteger(value) && value > 0 ? Math.min(value, maximum) : fallback);
-  // ==========
-  // APPEARANCE
-  // ==========
+  // ===== APPEARANCE =====
   const extraPalettes = new Set([
     "dracula",
     "darcula",
@@ -150,9 +140,7 @@
     }
   };
 
-  // ==========
-  // CONTROLS
-  // ==========
+  // ===== CONTROLS =====
   // Mirrored across the family so each viewer can run without a shared runtime.
   /**
    * Adds container light/dark controls, retaining legacy stylesheet links as a fallback.
@@ -313,9 +301,7 @@
     });
   };
 
-  // ==========
-  // PARSING
-  // ==========
+  // ===== PARSING =====
   const splitLines = (source) => {
     if (typeof source !== "string") throw new TypeError("Diff inputs must be strings.");
     if (source.length > 2000000) throw new RangeError("Each diff input is limited to 2 million characters.");
@@ -414,9 +400,7 @@
     return output;
   }
 
-  // ==========
-  // RENDERING
-  // ==========
+  // ===== RENDERING =====
   // Align replacements within each change block without changing the public edit list.
   const pairChanges = (edits) => {
     const rows = [];
@@ -446,9 +430,7 @@
     return rows;
   };
 
-  // ==========
-  // LIFECYCLE
-  // ==========
+  // ===== LIFECYCLE =====
   // One instance owns the container; replacement disposes its pending work first.
   // Replace the previous owner and return its cancellable state. Only the current owner may clear the host.
   const mount = (element, options, getText) => {
@@ -538,9 +520,7 @@
     return state;
   };
 
-  // ==========
-  // PUBLIC API
-  // ==========
+  // ===== PUBLIC API =====
   // Compare two strings without executing either. ready resolves after the first display batch.
   function byDIFFviewer(element, oldSource, newSource, options = {}) {
     if (typeof oldSource !== "string" || typeof newSource !== "string") throw new TypeError("Diff inputs must be strings.");
@@ -612,9 +592,7 @@
       appendLineText(cell, text, kind);
       row.appendChild(cell);
     };
-    // ==========
-    // RENDERING
-    // ==========
+    // ===== RENDERING =====
     const render = () => {
       if (!state.active) return;
       const head = node("thead"),
@@ -688,9 +666,7 @@
     } while (!step.done);
     return step.value;
   };
-  // ==========
-  // EXPORT
-  // ==========
+  // ===== EXPORT =====
   global.byDIFFviewer = byDIFFviewer;
   byDIFFviewer.initialized = true;
 })(typeof window !== "undefined" ? window : this);
