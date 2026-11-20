@@ -4,6 +4,32 @@
    data-theme="light" / "dark" remain mode aliases and override mode classes. */
 
 /* ===== VIEWER ===== */
+@property --_view-paper {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_view-surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --by-view-alt {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #eed;
+}
+@property --by-diff-add {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #dec;
+}
+@property --by-diff-remove {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fdd;
+}
+
 /* Keep host layout transitions out; component rules below opt in to motion. */
 .byDIFFdocument,
 .byDIFFdocument *,
@@ -12,6 +38,8 @@
   transition: none !important;
 }
 .byDIFFdocument {
+  --_view-paper: var(--by-view-document-bg, var(--by-view-bg));
+  --_view-surface: var(--by-view-container-bg, var(--by-view-bg));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -21,7 +49,7 @@
   padding: 0 1rem 0.75rem;
   border: 0.0625rem solid var(--by-view-border);
   border-radius: var(--by-view-radius, 0.75rem);
-  background: var(--by-view-document-bg, var(--by-view-bg));
+  background: var(--_view-paper);
   color: var(--by-view-text);
   font:
     1rem/1.4 system-ui,
@@ -49,18 +77,15 @@
 .byDIFFdocument select {
   max-width: 100%;
   margin: 0;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25em 0.5em;
   border: 0.0625rem solid var(--by-view-border);
   border-radius: var(--by-view-radius, 0.625rem);
-  background: var(--by-view-container-bg, var(--by-view-bg));
+  background: var(--_view-surface);
   color: inherit;
   font: inherit;
 }
 .byDIFFdocument button {
   cursor: pointer;
-}
-.byDIFFdocument button:hover {
-  background: var(--by-view-alt);
 }
 .byDIFFdocument button:disabled {
   opacity: 0.5;
@@ -116,8 +141,8 @@
   overflow-wrap: normal;
 }
 .byDIFFdocument .byDIFFcode {
-  font: 1rem/var(--by-view-line-height, 1.5) var(--by-view-content-font, ui-monospace, monospace);
-  min-width: 10rem;
+  font: 1em/var(--by-view-line-height, 1.5) var(--by-view-content-font, ui-monospace, monospace);
+  min-width: 10em;
 }
 .byDIFFdocument .byDIFFtext {
   white-space: pre;
@@ -129,7 +154,7 @@
   overflow-wrap: normal;
   text-align: right;
   user-select: none;
-  font: 0.875rem/var(--by-view-line-height, 1.5) var(--by-view-content-font, ui-monospace, monospace);
+  font: 0.875em/var(--by-view-line-height, 1.5) var(--by-view-content-font, ui-monospace, monospace);
 }
 .byDIFFdocument .byDIFFtable[data-view="unified"] .byDIFFinsert,
 .byDIFFdocument td.byDIFFinsert {
@@ -143,7 +168,7 @@
   display: block;
   color: var(--by-view-secondary);
   font:
-    italic 0.75rem/1.5 system-ui,
+    italic 0.75em/1.5 system-ui,
     sans-serif;
 }
 .byDIFFdocument .byVIEWpanel {
@@ -152,7 +177,7 @@
   overflow: hidden;
   border: 0.0625rem solid var(--by-view-border);
   border-radius: var(--by-view-radius, 0.625rem);
-  background: var(--by-view-container-bg, var(--by-view-bg));
+  background: var(--_view-surface);
 }
 .byDIFFdocument.byVIEWplain .byVIEWpanel {
   border: 0;
@@ -186,7 +211,7 @@
   gap: 0.125em;
   margin: 0;
   padding: 0.5em 0;
-  background: #0000;
+
   font: 0.875rem/1.25 var(--by-view-controls-font, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace);
   white-space: normal;
 }
@@ -262,7 +287,7 @@
   padding: 0.25em 0.5em;
   border: 0.0625em solid var(--by-view-border);
   border-radius: var(--by-view-radius, 0.625em);
-  background: var(--by-view-container-bg, var(--by-view-bg));
+  background: var(--_view-surface);
   color: inherit;
   font: inherit;
   line-height: 1;
@@ -270,7 +295,9 @@
   cursor: pointer;
 }
 .byDIFFdocument > .byVIEWtoolbar button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
+  outline: 0.0625rem dashed currentColor;
+  outline-offset: -0.25em;
   cursor: not-allowed;
 }
 .byDIFFdocument > .byVIEWtoolbar button:focus-visible {
@@ -353,15 +380,12 @@
 .byDIFFdocument button {
   -webkit-tap-highlight-color: #0000;
   touch-action: manipulation;
-  transition:
-    background-color var(--by-view-motion-duration, 0s) ease,
-    box-shadow var(--by-view-motion-duration, 0s) ease-out !important;
 }
 .byDIFFdocument button:not(:disabled):hover {
-  background: color-mix(in srgb, currentColor 7%, var(--by-view-container-bg, var(--by-view-bg)));
+  background: color-mix(in srgb, currentColor 7%, var(--_view-surface));
 }
 .byDIFFdocument button:not(:disabled):active {
-  background: color-mix(in srgb, currentColor 13%, var(--by-view-container-bg, var(--by-view-bg)));
+  background: color-mix(in srgb, currentColor 13%, var(--_view-surface));
 }
 .byDIFFdocument button:focus-visible {
   outline: 0.125rem solid var(--by-view-accent);
@@ -448,23 +472,27 @@
 .byDIFFdocument:not(.byVIEWready) {
   transition: none !important;
 }
-/* Background fades stay on shared surfaces, never individual rows or syntax tokens. */
+/* Interpolate the shared surfaces once, including inside scrolling content. */
 .byDIFFdocument.byVIEWready {
   transition:
-    background-color var(--by-view-motion-duration, 0s) ease,
-    opacity var(--by-view-motion-duration, 0s) ease !important;
+    --_view-paper var(--by-view-motion-duration) linear,
+    --_view-surface var(--by-view-motion-duration) linear,
+    --by-view-alt var(--by-view-motion-duration) linear,
+    --by-diff-add var(--by-view-motion-duration) linear,
+    --by-diff-remove var(--by-view-motion-duration) linear,
+    color var(--by-view-motion-duration) steps(2, jump-none),
+    opacity var(--by-view-motion-duration) ease !important;
 }
-.byDIFFdocument :is(.byVIEWpanel, .byVIEWstatus) {
-  transition: background-color var(--by-view-motion-duration, 0s) ease !important;
+.byDIFFdocument.byVIEWready .byVIEWstatus {
+  transition:
+    background-color var(--by-view-motion-duration) linear,
+    color var(--by-view-motion-duration) steps(2, jump-none) !important;
 }
 .byDIFFdocument.byVIEWmotion.byVIEWappear:not(.byVIEWready) {
   opacity: 0;
 }
 .byDIFFdocument :is(button, input, select, textarea, summary, a) {
   transition:
-    background-color var(--by-view-motion-duration) ease,
-    color var(--by-view-motion-duration) ease,
-    border-color var(--by-view-motion-duration) ease,
     box-shadow var(--by-view-motion-duration) ease,
     opacity var(--by-view-motion-duration) ease,
     translate var(--by-view-motion-duration) ease-out !important;
@@ -504,8 +532,8 @@
   transition-property: opacity, translate !important;
 }
 @media (forced-colors: active) {
-  .byDIFFdocument,
-  .byDIFFdocument :is(.byVIEWpanel, .byVIEWstatus) {
+  .byDIFFdocument.byVIEWready,
+  .byDIFFdocument.byVIEWready :is(.byVIEWpanel, .byVIEWstatus) {
     transition: none !important;
   }
   .byDIFFdocument :is(button, input, select, textarea, summary, a) {
