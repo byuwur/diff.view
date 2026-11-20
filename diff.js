@@ -636,7 +636,7 @@
         heading = node("tr");
       head.appendChild(heading);
       for (const label of view === "split" ? ["Old", "New"] : ["Old line", "New line", "Change", "Text"]) {
-        if (view === "unified" && !lineNumbers && /line$/.test(label)) continue;
+        if (view === "unified" && !lineNumbers && label.endsWith("line")) continue;
         const th = node("th", "", label);
         th.scope = "col";
         if (view === "split" && lineNumbers) th.colSpan = 2;
