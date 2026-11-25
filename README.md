@@ -56,7 +56,16 @@ Open [index.html](index.html) locally. Its host assets use the network. Exported
 
 ### API and comparison contract
 
-`byDIFFviewer(element, oldText, newText, options?)` requires two strings. Invalid types/target throw `TypeError`. Comparison errors are displayed, and `ready` resolves false.
+`byDIFFviewer(element, oldText, newText, options?)` accepts two sources. Invalid types/target throw `TypeError`. Comparison errors are displayed, and `ready` resolves false.
+
+A source string beginning with `https://`, `http://`, `/`, `./`, or `../` and containing no whitespace loads a file. Use `{ url: "example.js" }` for a bare filename. To display a URL string literally, pass `{ sourceType: "text" }` in the options.
+
+```javascript
+const viewer = byDIFFviewer(target, "./old.txt", "./new.txt");
+await viewer.ready;
+```
+
+Each side of a diff accepts either a file or literal text. Relative URLs resolve against the page. Cross-origin files require CORS. A failed or superseded load resolves `ready` to `false`.
 
 The main Copy button copies the exact new input; Copy old copies the exact old input. Display line endings normalize CR/LF/CRLF to LF; copying keeps the originals.
 

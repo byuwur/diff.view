@@ -612,6 +612,7 @@
     state.destroy = () => {
       if (!state.active) return;
       state.active = false;
+      state.request?.abort();
       cancelAnimationFrame(state.motionFrame);
       // An old controller must not clear a replacement mounted on the same element.
       if (instances.get(element) === state) {
@@ -653,18 +654,33 @@
     return state;
   };
 
+  const sourceURL = (input, options) => {
+    if (options?.sourceType === "text") return;
+    if (typeof input === "string") return /^(?:https?:\/\/|\.{1,2}\/|\/(?![/*]))[^\s]+$/i.test(input) ? input : undefined;
+    if (input && Object.hasOwn(input, "url") && typeof input.url === "string" && Object.keys(input).length === 1) return input.url.trim() || undefined;
+  };
+  const fetchSource = async (url, signal) => {
+    const response = await fetch(url, { signal });
+    if (!response.ok) throw new Error(`Unable to load source: HTTP ${response.status}.`);
+    return response.text();
+  };
+
   // ===== PUBLIC API =====
   // Compare two strings without executing either. ready resolves after the first display batch.
   function byDIFFviewer(element, oldSource, newSource, options = {}) {
-    return renderViewer(element, oldSource, newSource, options);
+    return renderViewer(element, oldSource, newSource, options, undefined, sourceURL(oldSource, options), sourceURL(newSource, options));
   }
 
-  function renderViewer(element, oldSource, newSource, options, previous) {
-    if (typeof oldSource !== "string" || typeof newSource !== "string") throw new TypeError("Diff inputs must be strings.");
+  function renderViewer(element, oldSource, newSource, options, previous, oldURL, newURL) {
+    if ((!oldURL && typeof oldSource !== "string") || (!newURL && typeof newSource !== "string")) throw new TypeError("Diff inputs must be text or source URLs.");
     options = { view: "split", batchSize: 500, ...options };
     const { lineNumbers = true, viewSelect = false, copyOldButton = false, loadMore = true } = options;
     options.batchSize = positive(options.batchSize, 500, 2000);
     const state = mount(element, options, () => newSource, previous);
+    if (oldURL || newURL) {
+      state.request = previous?.request ?? new AbortController();
+      state.sources = previous?.sources ?? Promise.all([oldURL ? fetchSource(oldURL, state.request.signal) : oldSource, newURL ? fetchSource(newURL, state.request.signal) : newSource]);
+    }
     previous?.highlights.disconnect();
     element.setAttribute("aria-busy", "true");
     const actions = node("div", "byVIEWactions");
@@ -814,7 +830,9 @@
     };
     state.ready = (async () => {
       try {
+        if (state.sources) [oldSource, newSource] = await state.sources;
         await pause();
+        if (!state.active) return false;
         const iterator = compare(oldSource, newSource, options);
         let step;
         do {
@@ -861,7 +879,7 @@
         }
         if (Object.hasOwn(changes, "statusBar")) state.syncStatus?.();
         if (redraw) {
-          return renderViewer(element, oldSource, newSource, options, state).ready;
+          return renderViewer(element, oldSource, newSource, options, state, oldURL, newURL).ready;
         }
       }
     });

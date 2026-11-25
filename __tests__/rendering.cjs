@@ -125,5 +125,34 @@ test("DIFF library", { timeout: 30000 }, async (t) => {
     assert.deepEqual(result, { ready: true, preserved: true, empty: true });
   });
 
+  await t.test("loads a source URL through the public API", async () => {
+    const url = "https://files.test/sample";
+    await page.route(url, (route) =>
+      route.fulfill({
+        contentType: "text/plain",
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: "new-value"
+      })
+    );
+    const displayed = await page.evaluate(async (url) => {
+      const viewer = byDIFFviewer(root, "old-value", url);
+      return (await viewer.ready) && root.textContent;
+    }, url);
+    assert.match(displayed, /old-value/);
+    assert.match(displayed, /new-value/);
+  });
+
+  await t.test("compares two source files in the requested order", async () => {
+    await page.route("https://files.test/*.txt", (route) =>
+      route.fulfill({
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: new URL(route.request().url()).pathname
+      })
+    );
+    const rendered = await page.evaluate(() => byDIFFviewer(root, { url: "https://files.test/before.txt" }, "https://files.test/after.txt").ready);
+    assert.equal(rendered, true);
+    assert.deepEqual(await page.locator(".byDIFFtext").allTextContents(), ["/before.txt", "/after.txt"]);
+  });
+
   assert.deepEqual(errors, [], "No uncaught browser errors");
 });
