@@ -1,6 +1,6 @@
 # DIFF.view
 
-Compare two strings in a unified or side-by-side view, with line numbers and exact source copying.
+Compare two strings in a unified or side-by-side view, with line numbers, character-level highlights, and exact source copying.
 
 ![DIFF.view preview](prev.jpg)
 
@@ -64,7 +64,7 @@ The main Copy button copies the exact new input; Copy old copies the exact old i
 
 The engine uses Myers' shortest edit script. Shifted and repeated lines are compared as sequences. Line text is compared separately from its terminator, so adding or removing a final newline changes the empty final line instead of replacing unchanged text. Whitespace options apply to line text. Empty input has zero lines.
 
-Intraline/word diff, file parsing, and patch application are unsupported.
+In both views, paired replacement lines highlight each run of added or removed characters. For example, changing `price = 120` to `price = 125` highlights the final `0` and `5`. Unpaired lines keep their full-line shading. Highlights follow `ignoreWhitespace` and use grapheme clusters where the browser supports `Intl.Segmenter`, with Unicode code points as the fallback. File parsing and patch application are unsupported.
 
 ### Diff options and limits
 
@@ -78,6 +78,8 @@ Intraline/word diff, file parsing, and patch application are unsupported.
 Each input is limited to 2 million characters and 20,000 lines, including the empty final line when present. After matching prefixes/suffixes are trimmed, the changed region allows at most 1,000 edits and 4 million comparison operations. Empty-sided regions are handled directly. Exceeding a limit displays an error; compare smaller sections for large rewrites.
 
 Trace memory grows quadratically with edit distance within these limits. The viewer yields during comparison and mounts one batch initially; `.diff()`, line splitting, prefix trimming, and individual search steps are synchronous.
+
+Character comparisons run as replacement rows approach the viewport. Both views reuse the result for each pair. Lines over 4,096 UTF-16 code units and replacements that exceed the inline search budget keep their line shading.
 
 Use `--by-diff-add` and `--by-diff-remove` on `.byDIFFdocument` to customize change colors alongside the shared variables below.
 

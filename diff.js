@@ -21,6 +21,7 @@
   // ===== STATE =====
   const instances = new WeakMap();
   let nextViewId = 0;
+  let graphemeSegmenter;
   // ===== HELPERS =====
   const node = (tag, className = "", text) => {
     const element = document.createElement(tag);
@@ -389,13 +390,13 @@
     if (lines.length > 20000) throw new RangeError("Each diff input is limited to 20,000 lines.");
     return lines;
   };
-  // Yield comparison checkpoints and return a bounded Myers edit script with original line payloads.
+  const lineText = (line) => (line.endsWith("\n") ? line.slice(0, -1) : line);
   function* compare(oldSource, newSource, options = {}) {
     const before = splitLines(oldSource),
       after = splitLines(newSource);
     // Comparison keys may ignore whitespace; operation payloads keep both original line texts.
     const key = (line) => {
-      const text = line.endsWith("\n") ? line.slice(0, -1) : line;
+      const text = lineText(line);
       return options.ignoreWhitespace === "all" ? text.replace(/\s/g, "") : options.ignoreWhitespace === "trim" ? text.trim() : text;
     };
     const a = before.map(key),
@@ -407,6 +408,10 @@
       oldText: x === null ? null : before[x],
       newText: y === null ? null : after[y]
     });
+    return yield* compareSequences(a, b, operation, 1000, 4000000);
+  }
+  // Both line edits and character highlights use the same bounded Myers search.
+  function* compareSequences(a, b, operation, maxEdits, maxWork) {
     let prefix = 0,
       suffix = 0;
     // Trim unchanged edges before spending the comparison budget on the changed middle.
@@ -426,7 +431,7 @@
       let work = 0,
         distance = -1;
       // Bound saved frontiers as well as comparisons so unrelated large inputs fail predictably.
-      search: for (let d = 0; d <= Math.min(n + m, 1000); d++) {
+      search: for (let d = 0; d <= Math.min(n + m, maxEdits); d++) {
         trace.push(new Map(frontier));
         for (let k = -d; k <= d; k += 2) {
           let x = k === -d || (k !== d && (frontier.get(k - 1) ?? -1) < (frontier.get(k + 1) ?? -1)) ? (frontier.get(k + 1) ?? 0) : (frontier.get(k - 1) ?? 0) + 1;
@@ -438,7 +443,7 @@
           }
           frontier.set(k, x);
           work++;
-          if (work > 4000000) throw new RangeError("Diff exceeded its comparison budget; compare smaller sections.");
+          if (work > maxWork) throw new RangeError("Diff exceeded its comparison budget; compare smaller sections.");
           if (x >= n && y >= m) {
             distance = d;
             break search;
@@ -446,7 +451,7 @@
         }
         if (d % 20 === 0) yield;
       }
-      if (distance < 0) throw new RangeError("Diff exceeds 1,000 edits in the changed region; compare smaller sections.");
+      if (distance < 0) throw new RangeError(`Diff exceeds ${maxEdits.toLocaleString("en-US")} edits in the changed region; compare smaller sections.`);
       let x = n,
         y = m;
       const edits = [];
@@ -477,7 +482,88 @@
     return output;
   }
 
+  const finishComparison = (iterator) => {
+    let step;
+    do {
+      step = iterator.next();
+    } while (!step.done);
+    return step.value;
+  };
+
   // ===== RENDERING =====
+  // Keep source offsets so ignored whitespace and multi-unit characters render verbatim.
+  const lineCharacters = (text, ignoreWhitespace) => {
+    let offset = 0;
+    if (ignoreWhitespace === "trim") {
+      const trimmed = text.trimStart();
+      offset = text.length - trimmed.length;
+      text = trimmed.trimEnd();
+    }
+    let segments = text;
+    if (/[^\x00-\x7f]/.test(text) && global.Intl?.Segmenter) {
+      graphemeSegmenter ||= new Intl.Segmenter(undefined, { granularity: "grapheme" });
+      segments = graphemeSegmenter.segment(text);
+    }
+    const characters = [],
+      offsets = [];
+    for (const part of segments) {
+      const character = typeof part === "string" ? part : part.segment;
+      if (ignoreWhitespace !== "all" || !/^\s+$/u.test(character)) {
+        characters.push(character);
+        offsets.push(offset);
+      }
+      offset += character.length;
+    }
+    return { characters, offsets };
+  };
+
+  const changedRanges = (pair, ignoreWhitespace) => {
+    const ranges = { delete: [], insert: [] };
+    const before = lineText(pair.oldText),
+      after = lineText(pair.newText);
+    if (Math.max(before.length, after.length) > 4096) return ranges;
+    const old = lineCharacters(before, ignoreWhitespace),
+      next = lineCharacters(after, ignoreWhitespace);
+    let edits;
+    try {
+      edits = finishComparison(compareSequences(old.characters, next.characters, (type) => type, 64, 16384));
+    } catch (error) {
+      // Expensive replacements keep their line shading.
+      if (error instanceof RangeError) return ranges;
+      throw error;
+    }
+    let x = 0,
+      y = 0;
+    for (const type of edits) {
+      if (type !== "equal") {
+        const side = type === "delete" ? old : next;
+        const index = type === "delete" ? x : y;
+        const start = side.offsets[index],
+          end = start + side.characters[index].length;
+        const previous = ranges[type].at(-1);
+        if (previous?.[1] === start) previous[1] = end;
+        else ranges[type].push([start, end]);
+      }
+      if (type !== "insert") x++;
+      if (type !== "delete") y++;
+    }
+    return ranges;
+  };
+
+  const highlightRanges = (span, ranges) => {
+    if (!ranges.length) return;
+    const text = span.textContent;
+    const fragment = document.createDocumentFragment();
+    let offset = 0;
+    for (const [start, end] of ranges) {
+      if (offset < start) fragment.append(text.slice(offset, start));
+      fragment.appendChild(node("span", "byDIFFinline", text.slice(start, end)));
+      offset = end;
+    }
+    if (offset < text.length) fragment.append(text.slice(offset));
+    span.replaceChildren(fragment);
+  };
+
   // Align replacements within each change block without changing the public edit list.
   const pairChanges = (edits) => {
     const rows = [];
@@ -495,13 +581,15 @@
       for (let offset = 0; offset < Math.max(removed.length, added.length); offset++) {
         const old = removed[offset],
           next = added[offset];
-        rows.push({
+        const row = {
           type: old && next ? "change" : old ? "delete" : "insert",
           oldText: old?.oldText ?? null,
           oldLine: old?.oldLine ?? null,
           newText: next?.newText ?? null,
           newLine: next?.newLine ?? null
-        });
+        };
+        if (old && next) old.pair = next.pair = row;
+        rows.push(row);
       }
     }
     return rows;
@@ -577,6 +665,7 @@
     const { lineNumbers = true, viewSelect = false, copyOldButton = false, loadMore = true } = options;
     options.batchSize = positive(options.batchSize, 500, 2000);
     const state = mount(element, options, () => newSource, previous);
+    previous?.highlights.disconnect();
     element.setAttribute("aria-busy", "true");
     const actions = node("div", "byVIEWactions");
     let view = options.view === "unified" ? "unified" : "split";
@@ -616,20 +705,46 @@
     scroll.appendChild(table);
     let edits = [],
       splitEdits = [],
+      inserted = 0,
+      deleted = 0,
       shown = options.batchSize;
     const more = button(state.content, "Load more", "Load more differences", () => {
       shown += options.batchSize;
-      render();
+      render(true);
     });
+    more.hidden = true;
     const panel = node("div", "byVIEWpanel");
     panel.append(status, scroll);
     state.content.replaceChildren(actions, panel, more);
+    const pending = new WeakMap();
+    state.highlights = new IntersectionObserver(
+      (entries) => {
+        if (!state.active) return;
+        for (const { target, isIntersecting } of entries) {
+          if (!isIntersecting || !table.contains(target)) continue;
+          state.highlights.unobserve(target);
+          const edit = pending.get(target);
+          const pair = edit.pair ?? edit;
+          pair.ranges ??= changedRanges(pair, options.ignoreWhitespace);
+          const spans = target.getElementsByClassName("byDIFFtext");
+          if (edit.type === "change") {
+            highlightRanges(spans[0], pair.ranges.delete);
+            highlightRanges(spans[1], pair.ranges.insert);
+          } else highlightRanges(spans[0], pair.ranges[edit.type]);
+        }
+      },
+      { rootMargin: "160px" }
+    );
+    const destroy = state.destroy;
+    state.destroy = () => {
+      state.highlights.disconnect();
+      destroy();
+    };
     const appendLineText = (cell, text, kind) => {
-      const source = text ?? "";
-      cell.appendChild(node("span", "byDIFFtext", source.endsWith("\n") ? source.slice(0, -1) : source));
+      cell.appendChild(node("span", "byDIFFtext", lineText(text ?? "")));
       // An empty payload represents the final newline; null represents a missing side of a split row.
       if (text === "" && kind !== "equal") cell.appendChild(node("small", "byDIFFnewline", "Newline at end of file"));
-      else if (text && !source.endsWith("\n")) cell.appendChild(node("small", "byDIFFnoNewline", "No newline at end of file"));
+      else if (text && !text.endsWith("\n")) cell.appendChild(node("small", "byDIFFnoNewline", "No newline at end of file"));
     };
     const addCell = (row, text, number, kind) => {
       if (lineNumbers) {
@@ -642,21 +757,29 @@
       row.appendChild(cell);
     };
     // ===== RENDERING =====
-    const render = () => {
+    const render = (append = false) => {
       if (!state.active) return;
-      const head = node("thead"),
-        heading = node("tr");
-      head.appendChild(heading);
-      for (const label of view === "split" ? ["Old", "New"] : ["Old line", "New line", "Change", "Text"]) {
-        if (view === "unified" && !lineNumbers && label.endsWith("line")) continue;
-        const th = node("th", "", label);
-        th.scope = "col";
-        if (view === "split" && lineNumbers) th.colSpan = 2;
-        heading.appendChild(th);
+      if (!append) {
+        state.highlights.disconnect();
+        const head = node("thead"),
+          heading = node("tr");
+        head.appendChild(heading);
+        for (const label of view === "split" ? ["Old", "New"] : ["Old line", "New line", "Change", "Text"]) {
+          if (view === "unified" && !lineNumbers && label.endsWith("line")) continue;
+          const th = node("th", "", label);
+          th.scope = "col";
+          if (view === "split" && lineNumbers) th.colSpan = 2;
+          heading.appendChild(th);
+        }
+        table.dataset.view = view;
+        table.replaceChildren(head, node("tbody"));
       }
-      const body = node("tbody");
+      const body = table.tBodies[0],
+        batch = document.createDocumentFragment();
       const rows = view === "split" ? splitEdits : edits;
-      for (const edit of !loadMore ? rows : rows.slice(0, shown)) {
+      const count = loadMore ? Math.min(shown, rows.length) : rows.length;
+      for (let index = body.rows.length; index < count; index++) {
+        const edit = rows[index];
         const row = node("tr", `byDIFF${edit.type}`);
         if (view === "split") {
           addCell(row, edit.oldText, edit.oldLine, edit.type !== "equal" && edit.oldText !== null ? "delete" : "equal");
@@ -673,19 +796,20 @@
           appendLineText(code, text, edit.type);
           row.appendChild(code);
         }
-        body.appendChild(row);
+        if (edit.type === "change" || edit.pair) {
+          pending.set(row, edit);
+          state.highlights.observe(row);
+        }
+        batch.appendChild(row);
       }
-      table.dataset.view = view;
-      table.replaceChildren(head, body);
+      body.appendChild(batch);
       more.hidden = !loadMore || shown >= rows.length;
       state.syncStatus = () => {
         const { statusBar = true } = options;
         status.hidden = !statusBar && edits.length > 0;
       };
       state.syncStatus();
-      const inserted = edits.filter((edit) => edit.type === "insert").length,
-        deleted = edits.filter((edit) => edit.type === "delete").length;
-      status.textContent = edits.length ? `${inserted} additions · ${deleted} deletions · ${!loadMore ? rows.length : Math.min(shown, rows.length)} of ${rows.length} rows displayed` : "Both inputs are empty.";
+      status.textContent = edits.length ? `${inserted} additions · ${deleted} deletions · ${count} of ${rows.length} rows displayed` : "Both inputs are empty.";
       element.setAttribute("aria-busy", "false");
     };
     state.ready = (async () => {
@@ -699,6 +823,10 @@
           if (!step.done) await pause();
         } while (!step.done);
         edits = step.value;
+        for (const edit of edits) {
+          if (edit.type === "insert") inserted++;
+          if (edit.type === "delete") deleted++;
+        }
         splitEdits = pairChanges(edits);
         render();
         return state.active;
@@ -740,15 +868,7 @@
     return state.api;
   }
 
-  byDIFFviewer.diff = (oldSource, newSource, options = {}) => {
-    // The synchronous API consumes the same generator without scheduling browser checkpoints.
-    const iterator = compare(oldSource, newSource, options);
-    let step;
-    do {
-      step = iterator.next();
-    } while (!step.done);
-    return step.value;
-  };
+  byDIFFviewer.diff = (oldSource, newSource, options = {}) => finishComparison(compare(oldSource, newSource, options));
   // ===== EXPORT =====
   global.byDIFFviewer = byDIFFviewer;
   byDIFFviewer.initialized = true;

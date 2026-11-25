@@ -164,6 +164,12 @@
 .byDIFFdocument td.byDIFFdelete {
   background: var(--by-diff-remove);
 }
+.byDIFFdocument .byDIFFinsert .byDIFFinline {
+  background: color-mix(in srgb, var(--by-diff-add) 65%, #249749);
+}
+.byDIFFdocument .byDIFFdelete .byDIFFinline {
+  background: color-mix(in srgb, var(--by-diff-remove) 65%, #dd4050);
+}
 .byDIFFdocument :is(.byDIFFnoNewline, .byDIFFnewline) {
   display: block;
   color: var(--by-view-secondary);
@@ -532,6 +538,9 @@
   transition-property: opacity, translate !important;
 }
 @media (forced-colors: active) {
+  .byDIFFdocument .byDIFFinline {
+    text-decoration: underline;
+  }
   .byDIFFdocument.byVIEWready,
   .byDIFFdocument.byVIEWready :is(.byVIEWpanel, .byVIEWstatus) {
     transition: none !important;
