@@ -78,8 +78,11 @@ test("DIFF playground loads, updates, and copies a starter", { timeout: 30000 },
   const preview = page.frameLocator("#preview-frame").locator(".byDIFFdocument");
   await preview.locator(".byDIFFtext").first().waitFor();
   const copy = preview.locator(".byVIEWcopy");
-  await page.locator("#latest-release").focus();
+  // Keep keyboard focus in the host without scrolling the iframe away from the pointer.
+  await page.locator("#latest-release").evaluate((link) => link.focus({ preventScroll: true }));
   await copy.hover();
+  assert.equal(await page.evaluate(() => document.activeElement.id), "latest-release");
+  assert.equal(await copy.innerText(), "Copy New");
   await page.keyboard.down("Shift");
   assert.equal(await copy.innerText(), "Copy Old");
   await page.keyboard.up("Shift");
