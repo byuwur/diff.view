@@ -129,6 +129,9 @@
   border-collapse: collapse;
   text-align: left;
 }
+.byDIFFdocument .byDIFFtable[data-view="split"] {
+  table-layout: fixed;
+}
 .byDIFFdocument :is(td, th) {
   border-bottom: 0.0625rem solid var(--by-view-border);
   padding: 0.25rem 0.5rem;
@@ -140,12 +143,27 @@
   white-space: nowrap;
   overflow-wrap: normal;
 }
+.byDIFFdocument th span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.byDIFFdocument .byDIFFtable[data-view="unified"] th span {
+  max-width: 12em;
+}
 .byDIFFdocument .byDIFFcode {
   font: 1em/var(--by-view-line-height, 1.5) var(--by-view-content-font, ui-monospace, monospace);
   min-width: 10em;
 }
 .byDIFFdocument .byDIFFtext {
   white-space: pre;
+}
+.byDIFFdocument .byDIFFtable[data-view="split"] .byDIFFtext {
+  display: block;
+  overflow-x: auto;
+}
+.byDIFFdocument .byDIFFgutter {
+  font: 0.875em var(--by-view-content-font, ui-monospace, monospace);
 }
 .byDIFFdocument :is(.byDIFFnumber, .byDIFFmarker) {
   color: var(--by-view-secondary);
@@ -265,7 +283,6 @@
   opacity: 1;
 }
 .byDIFFdocument.byVIEWcompact > .byVIEWtoolbar .byVIEWinfo {
-  flex: 1 1 auto;
   text-align: left;
 }
 .byDIFFdocument > .byVIEWtoolbar .byVIEWinfo a {
@@ -284,6 +301,14 @@
   gap: 0.375em;
   margin-left: auto;
   max-width: 100%;
+}
+.byDIFFdocument > .byVIEWtoolbar .byVIEWcontrols:has(.byVIEWcopySlot) {
+  width: 100%;
+}
+.byDIFFdocument.byVIEWcompact > .byVIEWtoolbar .byVIEWcontrols:has(.byVIEWcopySlot) {
+  /* Wrap the controls as a group independently of the hovered caption. */
+  flex: 1 1 16em;
+  width: auto;
 }
 .byDIFFdocument > .byVIEWtoolbar button {
   flex-shrink: 0;
@@ -323,12 +348,34 @@
   border: 0;
   border-radius: 0.375em;
 }
+.byDIFFdocument > .byVIEWtoolbar .byVIEWcopySlot {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1 1 0;
+  /* Leave room for the icon and "Copied!" when the controls wrap. */
+  min-width: min(100%, calc(7ch + 2.5em));
+  max-width: max-content;
+}
 .byDIFFdocument > .byVIEWtoolbar .byVIEWcopy {
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
+  max-width: 100%;
+}
+.byDIFFdocument > .byVIEWtoolbar .byVIEWcopy span {
+  max-width: 12em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.byDIFFdocument > .byVIEWtoolbar .byVIEWcopy[data-state] span::after {
+  content: attr(data-action);
+  display: block;
+  height: 0;
+  visibility: hidden;
 }
 .byDIFFdocument > .byVIEWtoolbar .byVIEWcopy svg {
+  flex: none;
   width: 1em;
   height: 1em;
   fill: currentColor;

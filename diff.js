@@ -38,32 +38,6 @@
     parent.appendChild(control);
     return control;
   };
-  const copyButton = (parent, getText, label = "Copy source", text = "Copy") => {
-    const control = button(parent, text, label, async () => {
-      control.disabled = true;
-      try {
-        await navigator.clipboard.writeText(getText());
-        control.textContent = "Copied!";
-        control.dataset.state = "success";
-      } catch {
-        control.textContent = "Failed";
-        control.dataset.state = "error";
-        control.title = "Copy failed. Check clipboard access.";
-      } finally {
-        control.disabled = false;
-      }
-    });
-    control.setAttribute("aria-live", "polite");
-    const reset = () => {
-      if (control.dataset.state === "error") return;
-      delete control.dataset.state;
-      control.textContent = text;
-      control.title = label;
-    };
-    control.addEventListener("mouseleave", reset);
-    control.addEventListener("focusout", reset);
-    return control;
-  };
   // Yield at a chunk boundary so input events and replacement renders can run.
   const pause = () => new Promise((resolve) => setTimeout(resolve, 0));
   const positive = (value, fallback, maximum) => (Number.isInteger(value) && value > 0 ? Math.min(value, maximum) : fallback);
@@ -271,13 +245,41 @@
     return { group: sizes, sync };
   };
 
-  /**
-   * Create a copy action for the complete source, including content outside the visible rendered chunk.
-   * @param {Function} getText Callback that returns the text to copy.
-   * @param {string} label Human-readable label.
-   * @returns {HTMLButtonElement}
-   */
-  const createCopyButton = (getText, label) => {
+  const sideLabel = (value, fallback) => (typeof value === "string" && value.trim()) || fallback;
+  const copyTitle = (button) => `Copy ${button.dataset.newLabel} (Shift+click for Copy ${button.dataset.oldLabel})`;
+  let copyShiftPressed = false;
+
+  const showCopyAction = (button, active) => {
+    const label = copyShiftPressed ? button.dataset.oldLabel : button.dataset.newLabel;
+    const caption = active ? `Copy ${label}` : "Copy";
+    delete button.dataset.state;
+    // WebKit cancels a pointer click if focus replaces the pressed text node.
+    const text = button.lastElementChild.firstChild;
+    if (text.data !== caption) text.data = caption;
+    button.lastElementChild.dataset.action = caption;
+    button.title = copyTitle(button);
+    button.setAttribute("aria-label", active && copyShiftPressed ? caption : button.title);
+  };
+
+  const syncCopyShift = (event) => {
+    if (event.type !== "blur" && event.key !== "Shift") return;
+    const pressed = !!event.shiftKey;
+    if (pressed === copyShiftPressed) return;
+    copyShiftPressed = pressed;
+    for (const button of document.querySelectorAll(`.${documentClass} > .byVIEWtoolbar .byVIEWcopy:is(:hover, :focus-visible)`)) showCopyAction(button, true);
+  };
+
+  // A hovered preview can receive pointer events while its host page still has keyboard focus.
+  const listenForCopyShift = (event) => {
+    const method = event?.type === "pagehide" ? "removeEventListener" : "addEventListener";
+    for (let frame = window; frame; frame = frame.frameElement?.ownerDocument.defaultView) {
+      frame[method]("keydown", syncCopyShift, true);
+      frame[method]("keyup", syncCopyShift, true);
+      frame[method]("blur", syncCopyShift);
+    }
+  };
+
+  const createCopyButton = (getText) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "byVIEWcopy";
@@ -286,24 +288,27 @@
       <path
         d="M288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448L480 448C515.3 448 544 419.3 544 384L544 183.4C544 166 536.9 149.3 524.3 137.2L466.6 81.8C454.7 70.4 438.8 64 422.3 64L288 64zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L352 496L352 512L160 512L160 256L176 256L176 192L160 192z" />
     </svg>`;
-    const caption = document.createElement("span");
+    const caption = node("span", "", "Copy");
     caption.setAttribute("aria-live", "polite");
     button.appendChild(caption);
-    const reset = () => {
-      if (button.dataset.state === "error") return;
-      delete button.dataset.state;
-      caption.textContent = "Copy";
-      button.title = label;
-      button.setAttribute("aria-label", label);
+    listenForCopyShift();
+    window.addEventListener("pagehide", listenForCopyShift);
+    window.addEventListener("pageshow", listenForCopyShift);
+    button.addEventListener("pointerenter", (event) => {
+      copyShiftPressed = event.shiftKey;
+      showCopyAction(button, true);
+    });
+    button.addEventListener("focus", () => showCopyAction(button, true));
+    const reset = (event) => {
+      if (button.dataset.state !== "error") showCopyAction(button, button.matches(event.type === "pointerleave" ? ":focus-visible" : ":hover"));
     };
-    reset();
-    button.addEventListener("mouseleave", reset);
-    button.addEventListener("focusout", reset);
+    button.addEventListener("pointerleave", reset);
+    button.addEventListener("blur", reset);
     button.addEventListener("click", async (event) => {
       button.disabled = true;
       let message = "Copied!";
       try {
-        await navigator.clipboard.writeText(getText(event));
+        await navigator.clipboard.writeText(getText(event.shiftKey || (event.detail === 0 && copyShiftPressed)));
         caption.textContent = message;
         button.dataset.state = "success";
       } catch {
@@ -312,7 +317,7 @@
         message = "Copy failed. Check clipboard access.";
       } finally {
         button.disabled = false;
-        button.title = `${message} ${label}`;
+        button.title = `${message} ${copyTitle(button)}`;
         button.setAttribute("aria-label", button.title);
       }
     });
@@ -320,7 +325,7 @@
   };
 
   // Keep the toolbar mounted while the current renderer applies option changes.
-  const mountControls = (element, content, initialOptions, getText, version, copyLabel = "Copy source") => {
+  const mountControls = (element, content, initialOptions, getText, version) => {
     const toolbar = node("div", "byVIEWtoolbar");
     const controls = node("div", "byVIEWcontrols");
     controls.setAttribute("role", "group");
@@ -346,6 +351,8 @@
         sizes?.sync();
       }
       Object.assign(options, changes);
+      options.oldLabel = sideLabel(options.oldLabel, "Old");
+      options.newLabel = sideLabel(options.newLabel, "New");
       const { toolbar: showToolbar = true, credits = true, themeToggle = true, fontSizeControls = true, copyButton = true, controlsCompact = true, controlsPosition, controlsSize } = options;
       if ("animations" in changes || "appearAnimation" in changes) syncMotion(element, options);
       element.classList.toggle("byVIEWcompact", controlsCompact);
@@ -362,8 +369,10 @@
           controls.appendChild(sizes.group);
         }
         if (copyButton) {
-          copy ??= createCopyButton(getText, copyLabel);
-          controls.appendChild(copy);
+          copy ??= createCopyButton(getText);
+          const slot = node("div", "byVIEWcopySlot");
+          slot.appendChild(copy);
+          controls.appendChild(slot);
         }
         toolbar.replaceChildren();
         if (credits) toolbar.appendChild(info);
@@ -374,6 +383,11 @@
       if (!visible) toolbar.remove();
       else if (bottom && toolbar !== element.lastElementChild) element.appendChild(toolbar);
       else if (!bottom && toolbar !== element.firstElementChild) element.prepend(toolbar);
+      if (copy && (copy.dataset.oldLabel !== options.oldLabel || copy.dataset.newLabel !== options.newLabel)) {
+        copy.dataset.oldLabel = options.oldLabel;
+        copy.dataset.newLabel = options.newLabel;
+        showCopyAction(copy, copy.matches(":hover, :focus-visible"));
+      }
     };
     update(initialOptions);
     return update;
@@ -674,9 +688,9 @@
   function renderViewer(element, oldSource, newSource, options, previous, oldURL, newURL) {
     if ((!oldURL && typeof oldSource !== "string") || (!newURL && typeof newSource !== "string")) throw new TypeError("Diff inputs must be text or source URLs.");
     options = { view: "split", batchSize: 500, ...options };
-    const { lineNumbers = true, viewSelect = false, copyOldButton = false, loadMore = true } = options;
+    const { lineNumbers = true, viewSelect = false, loadMore = true } = options;
     options.batchSize = positive(options.batchSize, 500, 2000);
-    const state = mount(element, options, () => newSource, previous);
+    const state = mount(element, options, (shiftPressed) => (shiftPressed ? oldSource : newSource), previous);
     if (oldURL || newURL) {
       state.request = previous?.request ?? new AbortController();
       state.sources = previous?.sources ?? Promise.all([oldURL ? fetchSource(oldURL, state.request.signal) : oldSource, newURL ? fetchSource(newURL, state.request.signal) : newSource]);
@@ -709,7 +723,6 @@
       viewControl.appendChild(choice);
     }
     if (viewSelect) actions.appendChild(viewControl);
-    if (copyOldButton) copyButton(actions, () => oldSource, "Copy old source", "Copy old");
     const status = node("p", "byVIEWstatus", "Comparing...");
     status.setAttribute("role", "status");
     const scroll = node("div", "byDIFFscroll");
@@ -773,22 +786,35 @@
       row.appendChild(cell);
     };
     // ===== RENDERING =====
+    const tableHead = () => {
+      const head = node("thead");
+      const heading = head.insertRow();
+      const { oldLabel, newLabel } = options;
+      let labels = [oldLabel, newLabel];
+      if (view === "unified") labels = lineNumbers ? [`${oldLabel} line`, `${newLabel} line`, "Change", "Text"] : ["Change", "Text"];
+      for (const label of labels) {
+        const th = node("th");
+        th.appendChild(node("span", "", label));
+        th.title = label;
+        th.scope = view === "split" && lineNumbers ? "colgroup" : "col";
+        if (view === "split" && lineNumbers) th.colSpan = 2;
+        heading.appendChild(th);
+      }
+      return head;
+    };
     const render = (append = false) => {
       if (!state.active) return;
       if (!append) {
         state.highlights.disconnect();
-        const head = node("thead"),
-          heading = node("tr");
-        head.appendChild(heading);
-        for (const label of view === "split" ? ["Old", "New"] : ["Old line", "New line", "Change", "Text"]) {
-          if (view === "unified" && !lineNumbers && label.endsWith("line")) continue;
-          const th = node("th", "", label);
-          th.scope = "col";
-          if (view === "split" && lineNumbers) th.colSpan = 2;
-          heading.appendChild(th);
-        }
         table.dataset.view = view;
-        table.replaceChildren(head, node("tbody"));
+        table.replaceChildren(tableHead(), node("tbody"));
+        if (view === "split" && lineNumbers) {
+          const side = node("colgroup");
+          const gutter = node("col", "byDIFFgutter");
+          gutter.style.width = `calc(${String(edits.length).length}ch + 1rem)`;
+          side.append(gutter, node("col"));
+          table.prepend(side, side.cloneNode(true));
+        }
       }
       const body = table.tBodies[0],
         batch = document.createDocumentFragment();
@@ -871,7 +897,8 @@
       destroy: state.destroy,
       setOptions(changes) {
         if (!state.active) return;
-        const redraw = ["view", "lineNumbers", "ignoreWhitespace", "batchSize", "viewSelect", "copyOldButton", "loadMore"].some((key) => key in changes && changes[key] !== options[key]);
+        const { oldLabel, newLabel } = options;
+        const redraw = ["view", "lineNumbers", "ignoreWhitespace", "batchSize", "viewSelect", "loadMore"].some((key) => key in changes && changes[key] !== options[key]);
         state.updateControls(options, changes);
         if ("displayContainer" in changes) {
           const { displayContainer = true } = changes;
@@ -881,6 +908,7 @@
         if (redraw) {
           return renderViewer(element, oldSource, newSource, options, state, oldURL, newURL).ready;
         }
+        if ((options.oldLabel !== oldLabel || options.newLabel !== newLabel) && table.tHead) table.tHead.replaceWith(tableHead());
       }
     });
     return state.api;

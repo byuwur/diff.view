@@ -67,7 +67,14 @@ await viewer.ready;
 
 Each side of a diff accepts either a file or literal text. Relative URLs resolve against the page. Cross-origin files require CORS. A failed or superseded load resolves `ready` to `false`.
 
-The main Copy button copies the exact new input; Copy old copies the exact old input. Display line endings normalize CR/LF/CRLF to LF; copying keeps the originals.
+Hover over the header’s **Copy** button to see **Copy New**. Hold Shift to switch to **Copy Old**. Clicking copies the full input for that side, including its original line endings, in either diff view.
+
+Set either side’s label in the playground under **Rendering** or pass it to the viewer. The Copy button grows to fit the active label up to the available space or a 12em caption limit. Both column headings and the button show an ellipsis when needed. Hover to read the full label.
+
+```javascript
+const viewer = byDIFFviewer(target, before, after, { oldLabel: "Draft", newLabel: "Published" });
+viewer.setOptions({ newLabel: "Revised" });
+```
 
 `byDIFFviewer.diff(oldText, newText, options?)` synchronously returns an array of `{ type, oldLine, newLine, oldText, newText }`. Types are `equal`, `delete`, and `insert`. Line numbers start at 1; an absent side is null. Text includes its normalized line terminator where present. Concatenating non-null `oldText` or `newText` reconstructs the corresponding normalized input. Equal lines may contain different text when whitespace is ignored or only their newline terminators differ. A trailing newline adds an empty final line. Invalid input throws `TypeError`/`RangeError`.
 
@@ -77,12 +84,14 @@ In both views, paired replacement lines highlight each run of added or removed c
 
 ### Diff options and limits
 
-| Option             | Default   | Behavior                                                                                                                                                          |
-| ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `view`             | `"split"` | `"unified"` or `"split"`; invalid values use `"split"`.                                                                                                           |
-| `lineNumbers`      | `true`    | Show old/new line numbers.                                                                                                                                        |
-| `ignoreWhitespace` | none      | `"trim"` ignores leading/trailing whitespace per line; `"all"` ignores whitespace within lines too. Other values compare exactly. Original line text is retained. |
-| `batchSize`        | `500`     | Initial/per Load more displayed row count, integer 1-2000; invalid values use 500.                                                                                |
+| Option                | Default   | Behavior                                                                                                                                                          |
+| --------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `view`                | `"split"` | `"unified"` or `"split"`; invalid values use `"split"`.                                                                                                           |
+| `lineNumbers`         | `true`    | Show old/new line numbers.                                                                                                                                        |
+| `oldLabel`            | `"Old"`   | Name of the old input. Blank or non-string values restore the default.                                                                                            |
+| `newLabel`            | `"New"`   | Name of the new input. Blank or non-string values restore the default.                                                                                            |
+| `ignoreWhitespace`    | none      | `"trim"` ignores leading/trailing whitespace per line; `"all"` ignores whitespace within lines too. Other values compare exactly. Original line text is retained. |
+| `batchSize`           | `500`     | Initial/per Load more displayed row count, integer 1-2000; invalid values use 500.                                                                                |
 
 Each input is limited to 2 million characters and 20,000 lines, including the empty final line when present. After matching prefixes/suffixes are trimmed, the changed region allows at most 1,000 edits and 4 million comparison operations. Empty-sided regions are handled directly. Exceeding a limit displays an error; compare smaller sections for large rewrites.
 
@@ -103,7 +112,6 @@ Use `--by-diff-add` and `--by-diff-remove` on `.byDIFFdocument` to customize cha
 | `displayContainer` | `true`      | Show the content panel frame and inner horizontal padding. `false` also hides status information.                                                          |
 | `statusBar`        | `true`      | Show counts and metadata when `displayContainer` is true. With `statusBar: false`, loading and empty results remain visible; errors always remain visible. |
 | `viewSelect`       | `false`     | Show segmented Unified / Side by side buttons.                                                                                                             |
-| `copyOldButton`    | `false`     | Show a separate button to copy the old source.                                                                                                             |
 | `loadMore`         | `true`      | Load differences in batches; false displays every line.                                                                                                    |
 | `theme`            | Container   | Initial `"light"` or `"dark"` mode class.                                                                                                                  |
 | `palette`          | Container   | Initial `data-theme` palette, including custom CSS names.                                                                                                  |
@@ -129,7 +137,7 @@ Re-rendering disposes the previous instance. `destroy()` cancels pending work an
 
 Input is displayed as text, never executed. Style `.byDIFFdocument` with `--by-view-bg`, `--by-view-text`, `--by-view-muted`, `--by-view-border`, `--by-view-accent`, `--by-view-alt`, `--by-view-string`, and `--by-view-literal`. The container uses system-ui; source/tree content uses monospace. Override the class or target's inline font/size as needed.
 
-In split view, adjacent removed and added lines share rows. Unmatched lines have an empty cell opposite them. Batches count displayed rows so replacements stay together.
+In split view, each side gets half the table width. Long source lines scroll horizontally within their cells. Adjacent removed and added lines share rows. Unmatched lines have an empty cell opposite them. Batches count displayed rows so replacements stay together.
 
 Copy requires clipboard permission in a secure context.
 

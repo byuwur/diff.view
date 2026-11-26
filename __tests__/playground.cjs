@@ -77,6 +77,26 @@ test("DIFF playground loads, updates, and copies a starter", { timeout: 30000 },
   assert.equal(await page.locator("#download-minified").getAttribute("href"), "https://github.com/byuwur/diff.view/releases/latest/download/diff.view.minified.zip");
   const preview = page.frameLocator("#preview-frame").locator(".byDIFFdocument");
   await preview.locator(".byDIFFtext").first().waitFor();
+  const copy = preview.locator(".byVIEWcopy");
+  await page.locator("#latest-release").focus();
+  await copy.hover();
+  await page.keyboard.down("Shift");
+  assert.equal(await copy.innerText(), "Copy Old");
+  await page.keyboard.up("Shift");
+  assert.equal(await copy.innerText(), "Copy New");
+  const oldLabel = page.getByRole("textbox", { name: "Old label", exact: true });
+  const newLabel = page.getByRole("textbox", { name: "New label", exact: true });
+  assert.equal(await oldLabel.inputValue(), "Old");
+  assert.equal(await newLabel.inputValue(), "New");
+  await oldLabel.fill("Original");
+  await newLabel.fill("Revision");
+  assert.deepEqual(await preview.locator("th").allTextContents(), ["Original", "Revision"]);
+  const settings = JSON.parse(await page.locator("#options-json").inputValue());
+  assert.equal(settings.oldLabel, "Original");
+  assert.equal(settings.newLabel, "Revision");
+  assert.equal(await copy.getAttribute("title"), "Copy Revision (Shift+click for Copy Original)");
+  await newLabel.fill("");
+  assert.deepEqual(await preview.locator("th").allTextContents(), ["Original", "New"]);
   const sizes = await preview.evaluate((viewer) => {
     const [decrease, reset, increase] = viewer.querySelectorAll(".byVIEWfontSize");
     const text = viewer.querySelector(".byDIFFtext");
