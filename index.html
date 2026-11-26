@@ -393,6 +393,10 @@
                           ><span class="form-check-label flex-grow-1 py-2">Line numbers</span
                           ><input class="form-check-input order-2 float-none flex-shrink-0 ms-0 my-0" type="checkbox" name="lineNumbers" checked="" id="lineNumbers" role="switch"
                         /></label>
+                        <label class="form-check form-switch d-flex align-items-center gap-3 ps-0 m-0"
+                          ><span class="form-check-label flex-grow-1 py-2">Highlight changed characters</span
+                          ><input class="form-check-input order-2 float-none flex-shrink-0 ms-0 my-0" type="checkbox" name="highlightCharacters" checked="" id="highlightCharacters" role="switch"
+                        /></label>
                         <fieldset id="ignoreWhitespace" class="mb-3" aria-describedby="ignoreWhitespace-help">
                           <legend class="small mb-2 form-label">Ignore whitespace</legend>
                           <div class="btn-group w-100" role="group" aria-label="Ignore whitespace">
@@ -966,6 +970,7 @@
           oldLabel: "Old",
           newLabel: "New",
           lineNumbers: true,
+          highlightCharacters: true,
           ignoreWhitespace: false,
           batchSize: 500
         };
@@ -1859,6 +1864,7 @@
           "oldLabel",
           "newLabel",
           "lineNumbers",
+          "highlightCharacters",
           "ignoreWhitespace",
           "batchSize"
         ];

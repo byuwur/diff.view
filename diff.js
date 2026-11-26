@@ -687,7 +687,7 @@
 
   function renderViewer(element, oldSource, newSource, options, previous, oldURL, newURL) {
     if ((!oldURL && typeof oldSource !== "string") || (!newURL && typeof newSource !== "string")) throw new TypeError("Diff inputs must be text or source URLs.");
-    options = { view: "split", batchSize: 500, ...options };
+    options = { view: "split", batchSize: 500, highlightCharacters: true, ...options };
     const { lineNumbers = true, viewSelect = false, loadMore = true } = options;
     options.batchSize = positive(options.batchSize, 500, 2000);
     const state = mount(element, options, (shiftPressed) => (shiftPressed ? oldSource : newSource), previous);
@@ -745,14 +745,14 @@
     const panel = node("div", "byVIEWpanel");
     panel.append(status, scroll);
     state.content.replaceChildren(actions, panel, more);
-    const pending = new WeakMap();
+    const rowEdits = new WeakMap();
     state.highlights = new IntersectionObserver(
       (entries) => {
-        if (!state.active) return;
+        if (!state.active || !options.highlightCharacters) return;
         for (const { target, isIntersecting } of entries) {
           if (!isIntersecting || !table.contains(target)) continue;
           state.highlights.unobserve(target);
-          const edit = pending.get(target);
+          const edit = rowEdits.get(target);
           const pair = edit.pair ?? edit;
           pair.ranges ??= changedRanges(pair, options.ignoreWhitespace);
           const spans = target.getElementsByClassName("byDIFFtext");
@@ -839,8 +839,8 @@
           row.appendChild(code);
         }
         if (edit.type === "change" || edit.pair) {
-          pending.set(row, edit);
-          state.highlights.observe(row);
+          rowEdits.set(row, edit);
+          if (options.highlightCharacters) state.highlights.observe(row);
         }
         batch.appendChild(row);
       }
@@ -897,7 +897,7 @@
       destroy: state.destroy,
       setOptions(changes) {
         if (!state.active) return;
-        const { oldLabel, newLabel } = options;
+        const { oldLabel, newLabel, highlightCharacters } = options;
         const redraw = ["view", "lineNumbers", "ignoreWhitespace", "batchSize", "viewSelect", "loadMore"].some((key) => key in changes && changes[key] !== options[key]);
         state.updateControls(options, changes);
         if ("displayContainer" in changes) {
@@ -909,6 +909,16 @@
           return renderViewer(element, oldSource, newSource, options, state, oldURL, newURL).ready;
         }
         if ((options.oldLabel !== oldLabel || options.newLabel !== newLabel) && table.tHead) table.tHead.replaceWith(tableHead());
+        if (options.highlightCharacters !== highlightCharacters) {
+          if (options.highlightCharacters) {
+            for (const row of table.tBodies[0]?.rows ?? []) {
+              if (rowEdits.has(row)) state.highlights.observe(row);
+            }
+          } else {
+            state.highlights.disconnect();
+            for (const mark of table.querySelectorAll(".byDIFFinline")) mark.replaceWith(mark.textContent);
+          }
+        }
       }
     });
     return state.api;

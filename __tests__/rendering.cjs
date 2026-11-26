@@ -220,6 +220,33 @@ test("DIFF library", { timeout: 30000 }, async (t) => {
     }
   });
 
+  await t.test("character highlighting can be toggled without losing loaded rows", async () => {
+    for (const view of ["split", "unified"]) {
+      await page.evaluate((view) => {
+        window.diff = byDIFFviewer(root, "price 10\nqty 2", "price 15\nqty 3", { view, batchSize: 1, highlightCharacters: false });
+        return diff.ready;
+      }, view);
+      const more = page.getByRole("button", { name: "Load more differences" });
+      while (await more.isVisible()) await more.click();
+      const rows = page.locator("#viewer tbody tr");
+      const first = await rows.first().elementHandle();
+      const contents = await rows.allTextContents();
+      const marks = page.locator("#viewer .byDIFFinline");
+      assert.equal(await marks.count(), 0);
+      assert.ok(await page.locator("#viewer .byDIFFdelete").count());
+      assert.ok(await page.locator("#viewer .byDIFFinsert").count());
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await page.evaluate(() => diff.setOptions({ highlightCharacters: true }));
+        await marks.nth(3).waitFor();
+        assert.deepEqual((await marks.allTextContents()).sort(), ["0", "2", "3", "5"]);
+        await page.evaluate(() => diff.setOptions({ highlightCharacters: false }));
+        assert.equal(await marks.count(), 0);
+        assert.ok(await first.evaluate((row) => row.isConnected));
+        assert.deepEqual(await rows.allTextContents(), contents);
+      }
+    }
+  });
+
   await t.test("insertions, deletions and ignored whitespace retain original text", async () => {
     const before = "  sum(a, b)  \nabcde\ntrailing \n";
     const after = "sum( a, b, c)\nace\ntrailing\n";

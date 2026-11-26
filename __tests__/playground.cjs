@@ -97,6 +97,14 @@ test("DIFF playground loads, updates, and copies a starter", { timeout: 30000 },
   assert.equal(await copy.getAttribute("title"), "Copy Revision (Shift+click for Copy Original)");
   await newLabel.fill("");
   assert.deepEqual(await preview.locator("th").allTextContents(), ["Original", "New"]);
+  const highlights = page.getByRole("switch", { name: "Highlight changed characters" });
+  assert.ok(await highlights.isChecked());
+  await preview.locator(".byDIFFinline").first().waitFor();
+  await highlights.uncheck();
+  assert.equal(await preview.locator(".byDIFFinline").count(), 0);
+  assert.equal(JSON.parse(await page.locator("#options-json").inputValue()).highlightCharacters, false);
+  await highlights.check();
+  await preview.locator(".byDIFFinline").first().waitFor();
   const sizes = await preview.evaluate((viewer) => {
     const [decrease, reset, increase] = viewer.querySelectorAll(".byVIEWfontSize");
     const text = viewer.querySelector(".byDIFFtext");

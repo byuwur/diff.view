@@ -88,6 +88,7 @@ In both views, paired replacement lines highlight each run of added or removed c
 | --------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `view`                | `"split"` | `"unified"` or `"split"`; invalid values use `"split"`.                                                                                                           |
 | `lineNumbers`         | `true`    | Show old/new line numbers.                                                                                                                                        |
+| `highlightCharacters` | `true`    | Highlight changed characters within paired lines in both views. Set to `false` for line shading only.                                                             |
 | `oldLabel`            | `"Old"`   | Name of the old input. Blank or non-string values restore the default.                                                                                            |
 | `newLabel`            | `"New"`   | Name of the new input. Blank or non-string values restore the default.                                                                                            |
 | `ignoreWhitespace`    | none      | `"trim"` ignores leading/trailing whitespace per line; `"all"` ignores whitespace within lines too. Other values compare exactly. Original line text is retained. |
