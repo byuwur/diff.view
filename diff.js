@@ -11,7 +11,7 @@
   if (global.byDIFFviewer?.initialized) return;
 
   // ===== METADATA =====
-  byDIFFviewer.VERSION = "2.4"; // 2026-11-25
+  byDIFFviewer.VERSION = "2.5"; // 2026-11-26
   // Mirrored helpers are checked by code.view/.github/scripts/check-family.mjs.
   const componentName = "DIFF.view";
   const themeFile = "diff";
